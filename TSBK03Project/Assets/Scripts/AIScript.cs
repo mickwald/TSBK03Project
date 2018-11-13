@@ -15,8 +15,10 @@ public class AIScript : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         choice = -1;
+        influenceMap = new int[256][];
         for(int i = 0; i < influenceMap.Length; i++)
         {
+            influenceMap[i] = new int[256];
             for(int j = 0; j < influenceMap[0].Length; j++)
             {
                 influenceMap[i][j] = 0;
@@ -35,10 +37,7 @@ public class AIScript : MonoBehaviour {
     private void DoAction()
     {
 
-        Vector3 position = this.transform.position;
-        Vector3 moveVec = new Vector3(0, 0, 1);
-        position += moveVec;
-        this.transform.position = position;
+        
 
     }
 
@@ -49,7 +48,7 @@ public class AIScript : MonoBehaviour {
         {
             Transform child = this.transform.parent.GetChild(i);
             if(GetDistance(this.transform, child) <= talkDistance){
-                MergeInfluenceMaps(influenceMap, this.transform.parent.GetChild(i).parent.GetComponent<AIScript>().GetInfluenceMap());
+                //MergeInfluenceMaps(influenceMap, this.transform.parent.GetChild(i).parent.GetComponent<AIScript>().GetInfluenceMap());
             }
         }
     }
