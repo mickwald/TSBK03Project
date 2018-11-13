@@ -35,7 +35,7 @@ public class AIScript : MonoBehaviour {
     private void DoAction()
     {
         Vector3 position = this.transform.position;
-        Vector3 moveVec = new Vector3(0, 0, 10); ;
+        Vector3 moveVec = new Vector3(0, 0, 1);
         position += moveVec;
         this.transform.position = position;
     }
