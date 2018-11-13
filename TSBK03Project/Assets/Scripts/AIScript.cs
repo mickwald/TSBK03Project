@@ -7,9 +7,15 @@ using UnityEngine;
 
 public class AIScript : MonoBehaviour {
 
-    int choice;
-    int[][] influenceMap;
-    const double talkDistance = 5.0;
+	public GameObject[] wayPoints; //probably should be in AIhandler and agent should call function to get waypoint CHANGE?
+	public int wayPointI;
+	public Transform currentWayPoint;
+	public float movementSpeed;
+	public float rotSpeed;
+    
+	private int choice;
+    private int[][] influenceMap;
+    private const double talkDistance = 5.0;
 
 
 	// Use this for initialization
@@ -24,12 +30,16 @@ public class AIScript : MonoBehaviour {
                 influenceMap[i][j] = 0;
             }
         }
+		wayPointI = 0;
+		movementSpeed = 1.0f;
+		rotSpeed = 2.0f;
 	}
 	
 	// Update is called once per frame
 	void Update () {
         DoAction();
         ShareInfluenceMap();
+		FindPath ();
 
 
 	}
@@ -67,4 +77,21 @@ public class AIScript : MonoBehaviour {
     {
         return ((Math.Sqrt(Math.Pow(transform.position.x, 2) + Math.Pow(transform.position.y, 2) + Math.Pow(transform.position.z, 2)) - (Math.Sqrt(Math.Pow(child.position.x, 2) + Math.Pow(child.position.y, 2) + Math.Pow(child.position.z, 2)))));
     }
+	public void FindPath(){
+		currentWayPoint = wayPoints [wayPointI].transform;
+		if (this.transform.position.x == currentWayPoint.position.x && this.transform.position.z == currentWayPoint.position.z)
+			wayPointI++;
+		if (wayPointI >= wayPoints.Length)
+			wayPointI = 0;
+		Vector3 targetVec = currentWayPoint.position - this.transform.position;
+		Vector3 newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
+		Vector3 newPos = Vector3.MoveTowards( this.transform.position, currentWayPoint.position, this.movementSpeed * Time.deltaTime );
+		this.transform.position = newPos;
+		this.transform.rotation = Quaternion.LookRotation(newDir);
+	}
+	public void OnCollisionEnter(Collision collision)
+	{
+		Debug.Log (collision.gameObject.name);
+
+	}
 }
