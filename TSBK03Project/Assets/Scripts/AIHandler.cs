@@ -26,9 +26,6 @@ public class AIHandler : MonoBehaviour {
         Vector3 pos = this.transform.position;
         pos.Set(5 + Mathf.Sin(Time.time), 0, 5 + Mathf.Cos(Time.time));
         this.transform.position = pos;
-
-
-
     }
 
     
