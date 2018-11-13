@@ -34,10 +34,12 @@ public class AIScript : MonoBehaviour {
 
     private void DoAction()
     {
+
         Vector3 position = this.transform.position;
         Vector3 moveVec = new Vector3(0, 0, 1);
         position += moveVec;
         this.transform.position = position;
+
     }
 
     private void ShareInfluenceMap()
@@ -50,7 +52,6 @@ public class AIScript : MonoBehaviour {
                 MergeInfluenceMaps(influenceMap, this.transform.parent.GetChild(i).parent.GetComponent<AIScript>().GetInfluenceMap());
             }
         }
-        throw new NotImplementedException();
     }
 
     private void MergeInfluenceMaps(int[][] influenceMap, int[][] v)
