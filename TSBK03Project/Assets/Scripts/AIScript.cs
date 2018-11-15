@@ -12,6 +12,10 @@ public class AIScript : MonoBehaviour {
 	public Transform currentWayPoint;
 	public float movementSpeed;
 	public float rotSpeed;
+	public Vector3 lastPlayerPos;
+	public bool seeingPlayer;
+	public bool checkingLastPlayerPos;
+	public bool atLastKnownPos;
     
 	private int choice;
     private int[][] influenceMap;
@@ -33,6 +37,9 @@ public class AIScript : MonoBehaviour {
 		wayPointI = 0;
 		movementSpeed = 1.0f;
 		rotSpeed = 2.0f;
+		seeingPlayer = false;
+		checkingLastPlayerPos = false;
+		atLastKnownPos = false;
 	}
 	
 	// Update is called once per frame
@@ -78,20 +85,76 @@ public class AIScript : MonoBehaviour {
         return ((Math.Sqrt(Math.Pow(transform.position.x, 2) + Math.Pow(transform.position.y, 2) + Math.Pow(transform.position.z, 2)) - (Math.Sqrt(Math.Pow(child.position.x, 2) + Math.Pow(child.position.y, 2) + Math.Pow(child.position.z, 2)))));
     }
 	public void FindPath(){
-		currentWayPoint = wayPoints [wayPointI].transform;
-		if (this.transform.position.x == currentWayPoint.position.x && this.transform.position.z == currentWayPoint.position.z)
-			wayPointI++;
-		if (wayPointI >= wayPoints.Length)
-			wayPointI = 0;
-		Vector3 targetVec = currentWayPoint.position - this.transform.position;
-		Vector3 newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
-		Vector3 newPos = Vector3.MoveTowards( this.transform.position, currentWayPoint.position, this.movementSpeed * Time.deltaTime );
-		this.transform.position = newPos;
+
+		Vector3 targetVec;
+		Vector3 newDir;
+		Vector3 newPos;
+
+		if (seeingPlayer) {
+			targetVec = lastPlayerPos - this.transform.position;
+			newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
+			newPos = Vector3.MoveTowards( this.transform.position, lastPlayerPos, this.movementSpeed * Time.deltaTime );
+		
+		} else if (checkingLastPlayerPos) {
+
+			if (this.transform.position.x == lastPlayerPos.x && this.transform.position.z == lastPlayerPos.z) {
+				atLastKnownPos = true;
+				targetVec = lastPlayerPos - this.transform.position;
+				newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
+				newPos = Vector3.MoveTowards( this.transform.position, lastPlayerPos, this.movementSpeed * Time.deltaTime );
+			} else {
+				targetVec = lastPlayerPos - this.transform.position;
+				newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
+				newPos = Vector3.MoveTowards( this.transform.position, lastPlayerPos, this.movementSpeed * Time.deltaTime );
+			}
+
+			
+		} else {
+			currentWayPoint = wayPoints [wayPointI].transform;
+			if ((int)this.transform.position.x == (int)currentWayPoint.position.x && (int)this.transform.position.z == (int)currentWayPoint.position.z)
+				wayPointI++;
+			if (wayPointI >= wayPoints.Length)
+				wayPointI = 0;
+			 targetVec = currentWayPoint.position - this.transform.position;
+			 newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
+			 newPos = Vector3.MoveTowards( this.transform.position, currentWayPoint.position, this.movementSpeed * Time.deltaTime );
+		}
+
+		this.transform.Translate (newDir);
 		this.transform.rotation = Quaternion.LookRotation(newDir);
 	}
 	public void OnCollisionEnter(Collision collision)
 	{
 		Debug.Log (collision.gameObject.name);
 
+	}
+	private void OnTriggerEnter(Collider other)
+	{
+		if (other.tag == "Player") {
+			Debug.Log ("Intuder!");
+			lastPlayerPos = other.transform.position;
+			seeingPlayer = true;
+
+		}
+	}
+	private void OnTriggerStay(Collider other)
+	{
+		if (other.tag == "Player") {
+			Debug.Log ("On the chase!");
+			lastPlayerPos = other.transform.position;
+			seeingPlayer = true;
+
+		}
+	}
+
+	private void OnTriggerExit(Collider other)
+	{
+		if (other.tag == "Player") {
+			Debug.Log ("Where did he go?");
+			lastPlayerPos = other.transform.position;
+			seeingPlayer = false;
+			checkingLastPlayerPos = true;
+
+		}
 	}
 }
