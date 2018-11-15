@@ -16,10 +16,14 @@ public class AIScript : MonoBehaviour {
 	public bool seeingPlayer;
 	public bool checkingLastPlayerPos;
 	public bool atLastKnownPos;
+	public enum Behaviour{Patrolling, SeeingPlayer, CheckingLastPlayerPos, Still};
+	public Behaviour currentBehaviour;
     
 	private int choice;
     private int[][] influenceMap;
     private const double talkDistance = 5.0;
+	private int layerMask = 1 << 8; // Bit shift the index of the layer (8) to get a bit mask
+
 
 
 	// Use this for initialization
@@ -35,11 +39,13 @@ public class AIScript : MonoBehaviour {
             }
         }
 		wayPointI = 0;
-		movementSpeed = 1.0f;
+		movementSpeed = 5.0f;
 		rotSpeed = 2.0f;
 		seeingPlayer = false;
 		checkingLastPlayerPos = false;
 		atLastKnownPos = false;
+		layerMask = ~layerMask; // not the layer mask to target all layers BUT the unit layer (layer 8)
+		currentBehaviour = Behaviour.Patrolling;
 	}
 	
 	// Update is called once per frame
@@ -89,38 +95,55 @@ public class AIScript : MonoBehaviour {
 		Vector3 targetVec;
 		Vector3 newDir;
 		Vector3 newPos;
+		bool still = false;
 
-		if (seeingPlayer) {
-			targetVec = lastPlayerPos - this.transform.position;
-			newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
-			newPos = Vector3.MoveTowards( this.transform.position, lastPlayerPos, this.movementSpeed * Time.deltaTime );
-		
-		} else if (checkingLastPlayerPos) {
+		switch (this.currentBehaviour){
 
-			if (this.transform.position.x == lastPlayerPos.x && this.transform.position.z == lastPlayerPos.z) {
-				atLastKnownPos = true;
-				targetVec = lastPlayerPos - this.transform.position;
-				newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
-				newPos = Vector3.MoveTowards( this.transform.position, lastPlayerPos, this.movementSpeed * Time.deltaTime );
-			} else {
-				targetVec = lastPlayerPos - this.transform.position;
-				newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
-				newPos = Vector3.MoveTowards( this.transform.position, lastPlayerPos, this.movementSpeed * Time.deltaTime );
-			}
-
-			
-		} else {
+		case Behaviour.Patrolling:
 			currentWayPoint = wayPoints [wayPointI].transform;
 			if ((int)this.transform.position.x == (int)currentWayPoint.position.x && (int)this.transform.position.z == (int)currentWayPoint.position.z)
 				wayPointI++;
+
 			if (wayPointI >= wayPoints.Length)
 				wayPointI = 0;
-			 targetVec = currentWayPoint.position - this.transform.position;
-			 newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
-			 newPos = Vector3.MoveTowards( this.transform.position, currentWayPoint.position, this.movementSpeed * Time.deltaTime );
-		}
+			targetVec = currentWayPoint.position - this.transform.position;
+			newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
+			newPos = Vector3.MoveTowards( this.transform.position, currentWayPoint.position, this.movementSpeed * Time.deltaTime );
+			break;
+		
+		case Behaviour.SeeingPlayer:
+			targetVec = lastPlayerPos - this.transform.position;
+			newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
+			newPos = Vector3.MoveTowards( this.transform.position, lastPlayerPos, this.movementSpeed * Time.deltaTime );
+			break;
+		
+		case Behaviour.CheckingLastPlayerPos:
+			targetVec = lastPlayerPos - this.transform.position;
+			newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
+			newPos = Vector3.MoveTowards( this.transform.position, lastPlayerPos, this.movementSpeed * Time.deltaTime );
+			break;
+		
+		case Behaviour.Still:
+			targetVec = currentWayPoint.position - this.transform.position;
+			newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);			newPos = this.transform.position;
+			still = true;
+			break;
+		
+		default:
+			Debug.Log ("Default!");
+			currentWayPoint = wayPoints [wayPointI].transform;
+			if ((int)this.transform.position.x == (int)currentWayPoint.position.x && (int)this.transform.position.z == (int)currentWayPoint.position.z)
+				wayPointI++;
 
-		this.transform.Translate (newDir);
+			if (wayPointI >= wayPoints.Length)
+				wayPointI = 0;
+			targetVec = currentWayPoint.position - this.transform.position;
+			newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
+			newPos = Vector3.MoveTowards( this.transform.position, currentWayPoint.position, this.movementSpeed * Time.deltaTime );
+			break;
+		}
+		if (!still) 
+			this.transform.position = new Vector3(newPos.x, 0.5f, newPos.z);
 		this.transform.rotation = Quaternion.LookRotation(newDir);
 	}
 	public void OnCollisionEnter(Collision collision)
@@ -131,30 +154,80 @@ public class AIScript : MonoBehaviour {
 	private void OnTriggerEnter(Collider other)
 	{
 		if (other.tag == "Player") {
-			Debug.Log ("Intuder!");
-			lastPlayerPos = other.transform.position;
-			seeingPlayer = true;
+			Vector3 targetVec = other.transform.position - this.transform.position;
+			RaycastHit hit;
+			// Does the ray intersect any objects excluding the player layer
+			if (Physics.Raycast(transform.position, targetVec, out hit, 100.0f, layerMask))
+			{
+				Debug.DrawRay(transform.position, transform.TransformDirection(-targetVec) * hit.distance, Color.yellow);
+				Debug.Log("Blocked!");
+				if (seeingPlayer)
+					currentBehaviour = Behaviour.CheckingLastPlayerPos;
+			}
+			else
+			{
+				Debug.DrawRay(transform.position, transform.TransformDirection(-targetVec) * 1000, Color.white);
+				Debug.DrawRay(transform.position, targetVec * 1000, Color.red);
 
+				Debug.Log("Clear!");
+				Debug.Log ("Intuder!");
+				lastPlayerPos = other.transform.position;
+				seeingPlayer = true;
+				currentBehaviour = Behaviour.SeeingPlayer;
+			}
 		}
 	}
 	private void OnTriggerStay(Collider other)
 	{
 		if (other.tag == "Player") {
-			Debug.Log ("On the chase!");
-			lastPlayerPos = other.transform.position;
-			seeingPlayer = true;
+			Vector3 targetVec = other.transform.position - this.transform.position;
+			RaycastHit hit;
+			// Does the ray intersect any objects excluding the player layer
+			if (Physics.Raycast(transform.position, targetVec, out hit, 100.0f, layerMask))
+			{
+				Debug.DrawRay(transform.position, transform.TransformDirection(-targetVec) * hit.distance, Color.yellow);
+				Debug.Log("Blocked!");
+				if (seeingPlayer)
+					currentBehaviour = Behaviour.CheckingLastPlayerPos;
+			}
+			else
+			{
+				Debug.DrawRay(transform.position, transform.TransformDirection(-targetVec) * 1000, Color.white);
+				Debug.DrawRay(transform.position, targetVec * 1000, Color.red);
+
+				Debug.Log("Clear!");
+				Debug.Log ("On the chase!");
+				lastPlayerPos = other.transform.position;
+				seeingPlayer = true;
+				currentBehaviour = Behaviour.SeeingPlayer;
+			}
+
 
 		}
 	}
 
-	private void OnTriggerExit(Collider other)
+	/*private void OnTriggerExit(Collider other)
 	{
 		if (other.tag == "Player") {
-			Debug.Log ("Where did he go?");
-			lastPlayerPos = other.transform.position;
-			seeingPlayer = false;
-			checkingLastPlayerPos = true;
+			Vector3 targetVec = other.transform.position - this.transform.position;
+			RaycastHit hit;
+			// Does the ray intersect any objects excluding the player layer
+			if (Physics.Raycast(transform.position, targetVec, out hit, 100.0f, layerMask))
+			{
+				Debug.DrawRay(transform.position, transform.TransformDirection(-targetVec) * hit.distance, Color.yellow);
+				Debug.Log("Hit!");
+			}
+			else
+			{
+				Debug.DrawRay(transform.position, transform.TransformDirection(-targetVec) * 1000, Color.white);
+				Debug.DrawRay(transform.position, targetVec * 1000, Color.red);
 
+				Debug.Log("Not!");
+				Debug.Log ("Where did he go?!");
+				lastPlayerPos = other.transform.position;
+				seeingPlayer = false;
+				checkingLastPlayerPos = true;
+			}
 		}
-	}
+	}*/
 }
