@@ -25,7 +25,11 @@ public class AIScript : MonoBehaviour {
 	private int layerMask = 1 << 8; // Bit shift the index of the layer (8) to get a bit mask
 
 
-
+    //Temp
+    private Vector3 debugRayStart;
+    private Vector3 debugRayDir;
+    //
+    
 	// Use this for initialization
 	void Start () {
         choice = -1;
@@ -53,8 +57,8 @@ public class AIScript : MonoBehaviour {
         DoAction();
         ShareInfluenceMap();
 		FindPath ();
-
-
+        Debug.DrawRay(debugRayStart, debugRayDir*1000, Color.green);
+        Debug.DrawRay(this.transform.position, this.transform.rotation * Vector3.forward*1000, Color.blue);
 	}
 
     private void DoAction()
@@ -125,7 +129,8 @@ public class AIScript : MonoBehaviour {
 		
 		case Behaviour.Still:
 			targetVec = currentWayPoint.position - this.transform.position;
-			newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);			newPos = this.transform.position;
+			newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
+            newPos = this.transform.position;
 			still = true;
 			break;
 		
@@ -142,13 +147,32 @@ public class AIScript : MonoBehaviour {
 			newPos = Vector3.MoveTowards( this.transform.position, currentWayPoint.position, this.movementSpeed * Time.deltaTime );
 			break;
 		}
-		if (!still) 
-			this.transform.position = new Vector3(newPos.x, 0.5f, newPos.z);
+
+        if (!still)
+            this.transform.Translate(movementSpeed*Vector3.forward*Time.deltaTime);
+            //this.transform.position = new Vector3(newPos.x, 0.5f, newPos.z);
 		this.transform.rotation = Quaternion.LookRotation(newDir);
 	}
 	public void OnCollisionEnter(Collision collision)
 	{
-		Debug.Log (collision.gameObject.name);
+        if (collision.gameObject.name == "Player")
+        {
+            Debug.Log("Game over!");
+            
+        }
+        else
+        {
+            if(collision.gameObject.name != "Plane")
+            {
+                Debug.Log("Crashed into wall");
+                Vector3 targetRot = this.transform.rotation * Vector3.forward;
+                debugRayStart = collision.contacts[0].point;
+                debugRayDir = Vector3.Reflect(targetRot, collision.contacts[0].normal);
+                this.transform.rotation = Quaternion.LookRotation(Vector3.Reflect(targetRot, collision.contacts[0].normal));
+            }
+        }
+
+        Debug.Log (collision.gameObject.name);
 
 	}
 	private void OnTriggerEnter(Collider other)
@@ -160,7 +184,7 @@ public class AIScript : MonoBehaviour {
 			if (Physics.Raycast(transform.position, targetVec, out hit, 100.0f, layerMask))
 			{
 				Debug.DrawRay(transform.position, transform.TransformDirection(-targetVec) * hit.distance, Color.yellow);
-				Debug.Log("Blocked!");
+				//Debug.Log("Blocked!");
 				if (seeingPlayer)
 					currentBehaviour = Behaviour.CheckingLastPlayerPos;
 			}
@@ -169,8 +193,8 @@ public class AIScript : MonoBehaviour {
 				Debug.DrawRay(transform.position, transform.TransformDirection(-targetVec) * 1000, Color.white);
 				Debug.DrawRay(transform.position, targetVec * 1000, Color.red);
 
-				Debug.Log("Clear!");
-				Debug.Log ("Intuder!");
+				//Debug.Log("Clear!");
+				//Debug.Log ("Intuder!");
 				lastPlayerPos = other.transform.position;
 				seeingPlayer = true;
 				currentBehaviour = Behaviour.SeeingPlayer;
@@ -186,7 +210,7 @@ public class AIScript : MonoBehaviour {
 			if (Physics.Raycast(transform.position, targetVec, out hit, 100.0f, layerMask))
 			{
 				Debug.DrawRay(transform.position, transform.TransformDirection(-targetVec) * hit.distance, Color.yellow);
-				Debug.Log("Blocked!");
+				//Debug.Log("Blocked!");
 				if (seeingPlayer)
 					currentBehaviour = Behaviour.CheckingLastPlayerPos;
 			}
@@ -195,8 +219,8 @@ public class AIScript : MonoBehaviour {
 				Debug.DrawRay(transform.position, transform.TransformDirection(-targetVec) * 1000, Color.white);
 				Debug.DrawRay(transform.position, targetVec * 1000, Color.red);
 
-				Debug.Log("Clear!");
-				Debug.Log ("On the chase!");
+				//Debug.Log("Clear!");
+				//Debug.Log ("On the chase!");
 				lastPlayerPos = other.transform.position;
 				seeingPlayer = true;
 				currentBehaviour = Behaviour.SeeingPlayer;
