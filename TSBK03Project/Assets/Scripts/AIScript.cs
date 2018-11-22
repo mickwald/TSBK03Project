@@ -18,6 +18,7 @@ public class AIScript : MonoBehaviour {
 	public bool atLastKnownPos;
 	public enum Behaviour{Patrolling, SeeingPlayer, CheckingLastPlayerPos, Still};
 	public Behaviour currentBehaviour;
+
     
 	private int choice;
     private int[][] influenceMap;
@@ -122,10 +123,15 @@ public class AIScript : MonoBehaviour {
 			break;
 		
 		case Behaviour.CheckingLastPlayerPos:
+			if ((int)this.transform.position.x == (int)lastPlayerPos.x && (int)this.transform.position.z == (int)lastPlayerPos.z)
+				currentBehaviour = Behaviour.Patrolling;
+			
+			
 			targetVec = lastPlayerPos - this.transform.position;
 			newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
 			newPos = Vector3.MoveTowards( this.transform.position, lastPlayerPos, this.movementSpeed * Time.deltaTime );
 			break;
+
 		
 		case Behaviour.Still:
 			targetVec = currentWayPoint.position - this.transform.position;
@@ -196,6 +202,7 @@ public class AIScript : MonoBehaviour {
 				//Debug.Log("Clear!");
 				//Debug.Log ("Intuder!");
 				lastPlayerPos = other.transform.position;
+				lastPlayerPos.y = 0.0f;
 				seeingPlayer = true;
 				currentBehaviour = Behaviour.SeeingPlayer;
 			}
@@ -222,6 +229,7 @@ public class AIScript : MonoBehaviour {
 				//Debug.Log("Clear!");
 				//Debug.Log ("On the chase!");
 				lastPlayerPos = other.transform.position;
+				lastPlayerPos.y = 0.0f;
 				seeingPlayer = true;
 				currentBehaviour = Behaviour.SeeingPlayer;
 			}
@@ -230,7 +238,7 @@ public class AIScript : MonoBehaviour {
 		}
 	}
 
-	/*private void OnTriggerExit(Collider other)
+	private void OnTriggerExit(Collider other)
 	{
 		if (other.tag == "Player") {
 			Vector3 targetVec = other.transform.position - this.transform.position;
@@ -239,19 +247,17 @@ public class AIScript : MonoBehaviour {
 			if (Physics.Raycast(transform.position, targetVec, out hit, 100.0f, layerMask))
 			{
 				Debug.DrawRay(transform.position, transform.TransformDirection(-targetVec) * hit.distance, Color.yellow);
-				Debug.Log("Hit!");
+				//Debug.Log("Hit!");
 			}
 			else
 			{
 				Debug.DrawRay(transform.position, transform.TransformDirection(-targetVec) * 1000, Color.white);
 				Debug.DrawRay(transform.position, targetVec * 1000, Color.red);
 
-				Debug.Log("Not!");
+				//Debug.Log("Not!");
 				Debug.Log ("Where did he go?!");
-				lastPlayerPos = other.transform.position;
-				seeingPlayer = false;
-				checkingLastPlayerPos = true;
+				this.currentBehaviour = Behaviour.CheckingLastPlayerPos;
 			}
 		}
-	}*/
+	}
 }
