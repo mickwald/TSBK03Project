@@ -1,0 +1,4 @@
+Make communicate function
+Make influence map update function
+Make influencemap convolution function
+make more states in the ai enum to make agent navigate based on influencemap
