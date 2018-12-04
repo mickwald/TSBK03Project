@@ -77,7 +77,7 @@ public class AIScript : MonoBehaviour {
         //Add new values
         if (seeingPlayer)
         {
-            this.influenceMap[(int) Math.Floor(lastPlayerPos.x)][(int) Math.Floor(lastPlayerPos.y)] = 255;
+            this.influenceMap[(int) Math.Floor(lastPlayerPos.x/5.0)][(int) Math.Floor(lastPlayerPos.z/5.0)] = 255;
         }
         //LP-filter
 
