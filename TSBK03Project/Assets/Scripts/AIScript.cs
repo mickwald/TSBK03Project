@@ -55,17 +55,33 @@ public class AIScript : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        DoAction();
+        UpdateInfluenceMap();
         ShareInfluenceMap();
 		FindPath ();
         Debug.DrawRay(debugRayStart, debugRayDir*1000, Color.green);
         Debug.DrawRay(this.transform.position, this.transform.rotation * Vector3.forward*1000, Color.blue);
 	}
 
-    private void DoAction()
+    private void UpdateInfluenceMap()
     {
+        //Make old values depreciate
+        for(int i=0; i < influenceMap.Length; i++)
+        {
+            for (int j = 0; j < influenceMap[0].Length; j++)
+            {
+                influenceMap[i][j] = influenceMap[i][j] >> 2;
+            }
+        }
 
-        
+
+        //Add new values
+        if (seeingPlayer)
+        {
+            this.influenceMap[(int) Math.Floor(lastPlayerPos.x)][(int) Math.Floor(lastPlayerPos.y)] = 255;
+        }
+        //LP-filter
+
+
 
     }
 
