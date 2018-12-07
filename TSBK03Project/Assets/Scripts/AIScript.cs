@@ -182,6 +182,7 @@ public class AIScript : MonoBehaviour {
             //this.transform.position = new Vector3(newPos.x, 0.5f, newPos.z);
 		this.transform.rotation = Quaternion.LookRotation(newDir);
 	}
+
 	public void OnCollisionEnter(Collision collision)
 	{
         if (collision.gameObject.name == "Player")
@@ -204,23 +205,21 @@ public class AIScript : MonoBehaviour {
         Debug.Log (collision.gameObject.name);
 
 	}
+
 	private void OnTriggerEnter(Collider other)
 	{
 		if (other.tag == "Player") {
 			Vector3 targetVec = other.transform.position - this.transform.position;
 			RaycastHit hit;
 			// Does the ray intersect any objects excluding the player layer
-			if (Physics.Raycast(transform.position, targetVec, out hit, 100.0f, layerMask))
-			{
-				Debug.DrawRay(transform.position, transform.TransformDirection(-targetVec) * hit.distance, Color.yellow);
+			if (Physics.Raycast (transform.position, targetVec, out hit, 100.0f, layerMask)) {
+				Debug.DrawRay (transform.position, transform.TransformDirection (-targetVec) * hit.distance, Color.yellow);
 				//Debug.Log("Blocked!");
 				if (seeingPlayer)
 					currentBehaviour = Behaviour.CheckingLastPlayerPos;
-			}
-			else
-			{
-				Debug.DrawRay(transform.position, transform.TransformDirection(-targetVec) * 1000, Color.white);
-				Debug.DrawRay(transform.position, targetVec * 1000, Color.red);
+			} else {
+				Debug.DrawRay (transform.position, transform.TransformDirection (-targetVec) * 1000, Color.white);
+				Debug.DrawRay (transform.position, targetVec * 1000, Color.red);
 
 				//Debug.Log("Clear!");
 				//Debug.Log ("Intuder!");
@@ -229,8 +228,11 @@ public class AIScript : MonoBehaviour {
 				seeingPlayer = true;
 				currentBehaviour = Behaviour.SeeingPlayer;
 			}
+		} else if (other.tag == "Agent") {
+			
 		}
 	}
+
 	private void OnTriggerStay(Collider other)
 	{
 		if (other.tag == "Player") {
