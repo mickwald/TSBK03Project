@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Terrain
   - Agent
+  - AIHandler
   layers:
   - Default
   - TransparentFX
