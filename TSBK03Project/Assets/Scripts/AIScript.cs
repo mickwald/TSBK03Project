@@ -18,7 +18,9 @@ public class AIScript : MonoBehaviour {
 	public bool atLastKnownPos;
 	public enum Behaviour{Patrolling, SeeingPlayer, CheckingLastPlayerPos, Still};
 	public Behaviour currentBehaviour;
-
+	public Texture2D influenceMapTex;
+	public int mapHight;
+	public int mapWidth;
     
 	private int choice;
     private int[][] influenceMap;
@@ -34,15 +36,20 @@ public class AIScript : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         choice = -1;
-        influenceMap = new int[256][];
+		mapHight = 256;
+		mapWidth = 256;
+		influenceMapTex = new Texture2D (mapHight, mapWidth,TextureFormat.ARGB32, false);
+		influenceMap = new int[mapHight][];
         for(int i = 0; i < influenceMap.Length; i++)
         {
-            influenceMap[i] = new int[256];
+			influenceMap[i] = new int[mapWidth];
             for(int j = 0; j < influenceMap[0].Length; j++)
             {
                 influenceMap[i][j] = 0;
+				influenceMapTex.SetPixel(i, j, new Color(0.5f, 0.5f, 0.5f, 1.0f));
             }
         }
+		influenceMapTex.Apply ();
 		wayPointI = 0;
 		movementSpeed = 5.0f;
 		rotSpeed = 2.0f;
