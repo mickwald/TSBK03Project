@@ -25,7 +25,11 @@ public class AIScript : MonoBehaviour {
 	private int choice;
     private int[][] influenceMap;
     private const double talkDistance = 5.0;
+    private const int influenceMapOffsetX = 0;
+    private const int influenceMapOffsetY = 0;
+    private const int influenceMapScale = 1;
 	private int layerMask = 1 << 8; // Bit shift the index of the layer (8) to get a bit mask
+    private float influenceMapUpdateTime;
 
 
     //Temp
@@ -45,10 +49,11 @@ public class AIScript : MonoBehaviour {
 			influenceMap[i] = new int[mapWidth];
             for(int j = 0; j < influenceMap[0].Length; j++)
             {
-                influenceMap[i][j] = 0;
+                influenceMap[i*influenceMapScale + influenceMapOffsetY][j * influenceMapScale + influenceMapOffsetX] = 0;   //influenceMap[z][x]
 				influenceMapTex.SetPixel(i, j, new Color(0.5f, 0.5f, 0.5f, 1.0f));
             }
         }
+        influenceMapUpdateTime = Time.time;
 		influenceMapTex.Apply ();
 		wayPointI = 0;
 		movementSpeed = 5.0f;
@@ -71,22 +76,29 @@ public class AIScript : MonoBehaviour {
 
     private void UpdateInfluenceMap()
     {
-        //Make old values depreciate
-        for(int i=0; i < influenceMap.Length; i++)
+        if (Time.time - influenceMapUpdateTime >= 1)
         {
-            for (int j = 0; j < influenceMap[0].Length; j++)
+            //Update when last update was made
+            influenceMapUpdateTime = Time.time;
+
+            //Make old values depreciate
+            for (int i = 0; i < influenceMap.Length; i++)
             {
-                influenceMap[i][j] = influenceMap[i][j] >> 2;
+                for (int j = 0; j < influenceMap[0].Length; j++)
+                {
+                    influenceMap[i*influenceMapScale + influenceMapOffsetY][j*influenceMapScale + influenceMapOffsetX] = 
+                        influenceMap[i * influenceMapScale + influenceMapOffsetY][j * influenceMapScale + influenceMapOffsetX] >> 1;
+                }
             }
+
         }
-
-
         //Add new values
         if (seeingPlayer)
         {
-            this.influenceMap[(int) Math.Floor(lastPlayerPos.x/5.0)][(int) Math.Floor(lastPlayerPos.z/5.0)] = 255;
+            this.influenceMap[((((int) lastPlayerPos.z) - influenceMapOffsetY)/influenceMapScale)][((((int)lastPlayerPos.x) - influenceMapOffsetX) / influenceMapScale)] = 255;
         }
-        //LP-filter
+
+        //Apply LP -filter
 
 
 
