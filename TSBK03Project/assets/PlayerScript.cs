@@ -16,9 +16,12 @@ public class PlayerScript : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+        this.transform.rotation = Quaternion.Euler(0, this.transform.rotation.eulerAngles.y, 0);
+        this.transform.position = new Vector3(transform.position.x, 1, transform.position.z);
         moveVertical = Input.GetAxis("Vertical");
         moveHorizontal = Input.GetAxis("Horizontal");
-        this.transform.Translate(moveHorizontal * playerSpeed, 0, moveVertical * playerSpeed, Space.World);
+        this.transform.Translate(0, 0, moveVertical * playerSpeed, Space.Self);
+        this.transform.Rotate(360* moveHorizontal * Vector3.up * Time.deltaTime);
 	}
     
 }
