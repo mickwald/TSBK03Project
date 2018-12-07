@@ -28,6 +28,7 @@ public class AIScript : MonoBehaviour {
     private const int influenceMapOffsetX = 0;
     private const int influenceMapOffsetY = 0;
     private const int influenceMapScale = 1;
+	private GameObject handler;
 	private int layerMask = 1 << 8; // Bit shift the index of the layer (8) to get a bit mask
     private float influenceMapUpdateTime;
 
@@ -37,8 +38,23 @@ public class AIScript : MonoBehaviour {
     private Vector3 debugRayDir;
     //
     
+	public struct AgentInfo{
+		// Variables
+		public int[][] OtherInfluenceMap;
+		public Vector3 OtherPlayerPos;
+		public Behaviour OtherBehaviour;
+
+		//Constructor
+		public AgentInfo(int[][] otherInfluenceMap, Vector3 otherPlayerPos, Behaviour otherBehaviour){
+			this.OtherInfluenceMap = otherInfluenceMap;
+			this.OtherPlayerPos = otherPlayerPos;
+			this.OtherBehaviour = otherBehaviour;
+		}
+	}
+
 	// Use this for initialization
 	void Start () {
+		handler = GameObject.FindGameObjectWithTag ("AIHandler");
         choice = -1;
 		mapHight = 256;
 		mapWidth = 256;
@@ -68,7 +84,6 @@ public class AIScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         UpdateInfluenceMap();
-        ShareInfluenceMap();
 		FindPath ();
         Debug.DrawRay(debugRayStart, debugRayDir*1000, Color.green);
         Debug.DrawRay(this.transform.position, this.transform.rotation * Vector3.forward*1000, Color.blue);
@@ -103,20 +118,9 @@ public class AIScript : MonoBehaviour {
 
 
     }
+		
 
-    private void ShareInfluenceMap()
-    {
-        int children = this.transform.parent.childCount;
-        for (int i = 0; i < children; i++)
-        {
-            Transform child = this.transform.parent.GetChild(i);
-            if(GetDistance(this.transform, child) <= talkDistance){
-                //MergeInfluenceMaps(influenceMap, this.transform.parent.GetChild(i).parent.GetComponent<AIScript>().GetInfluenceMap());
-            }
-        }
-    }
-
-    private void MergeInfluenceMaps(int[][] influenceMap, int[][] v)
+    private void MergeInfluenceMaps(int[][] influenceMap)
     {
         throw new NotImplementedException();
     }
@@ -215,7 +219,32 @@ public class AIScript : MonoBehaviour {
         }
 
         Debug.Log (collision.gameObject.name);
+	}
 
+	public void CommunicateShort( GameObject obj){
+		AIScript other = (AIScript)obj.GetComponent (typeof(AIScript));
+		AgentInfo info = new AgentInfo (this.influenceMap, this.lastPlayerPos, this.currentBehaviour);
+		other.ReceiveInfo (info);
+	}
+
+	public void ComminicateLong(){
+		AgentInfo info = new AgentInfo (this.influenceMap, this.lastPlayerPos, this.currentBehaviour);
+		int childCnt = handler.transform.childCount;
+
+		for (int i = 0; i < childCnt; i++) {
+			AIScript other = (AIScript) handler.transform.GetChild(childCnt).GetComponent (typeof(AIScript));
+			other.ReceiveInfo(info);
+		}
+	}
+
+	public void ReceiveInfo(AgentInfo otherInfo){
+		MergeInfluenceMaps (otherInfo.OtherInfluenceMap);
+		if (!(this.currentBehaviour == Behaviour.SeeingPlayer || this.currentBehaviour == Behaviour.CheckingLastPlayerPos)) {
+			if (otherInfo.OtherBehaviour == Behaviour.SeeingPlayer) {
+				this.currentBehaviour = Behaviour.CheckingLastPlayerPos;
+				this.lastPlayerPos = otherInfo.OtherPlayerPos;
+			}
+		}
 	}
 
 	private void OnTriggerEnter(Collider other)
@@ -241,7 +270,7 @@ public class AIScript : MonoBehaviour {
 				currentBehaviour = Behaviour.SeeingPlayer;
 			}
 		} else if (other.tag == "Agent") {
-			
+			CommunicateShort (other.gameObject);
 		}
 	}
 
@@ -270,8 +299,8 @@ public class AIScript : MonoBehaviour {
 				seeingPlayer = true;
 				currentBehaviour = Behaviour.SeeingPlayer;
 			}
-
-
+		}else if (other.tag == "Agent") {
+			CommunicateShort (other.gameObject);
 		}
 	}
 
