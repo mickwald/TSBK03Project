@@ -25,8 +25,8 @@ public class AIScript : MonoBehaviour {
 	private int choice;
     private int[][] influenceMap;
     private const double talkDistance = 5.0;
-    private const int influenceMapOffsetX = 0;
-    private const int influenceMapOffsetY = 0;
+    private const int influenceMapOffsetX = -128;
+    private const int influenceMapOffsetY = -128;
     private const int influenceMapScale = 1;
 	private GameObject handler;
 	private int layerMask = 1 << 8; // Bit shift the index of the layer (8) to get a bit mask
@@ -65,7 +65,7 @@ public class AIScript : MonoBehaviour {
 			influenceMap[i] = new int[mapWidth];
             for(int j = 0; j < influenceMap[0].Length; j++)
             {
-                influenceMap[i*influenceMapScale + influenceMapOffsetY][j * influenceMapScale + influenceMapOffsetX] = 0;   //influenceMap[z][x]
+                influenceMap[i][j] = 0;   //influenceMap[z][x]
 				influenceMapTex.SetPixel(i, j, new Color(0.5f, 0.5f, 0.5f, 1.0f));
             }
         }
@@ -101,13 +101,8 @@ public class AIScript : MonoBehaviour {
             {
                 for (int j = 0; j < influenceMap[0].Length; j++)
                 {
-                    int x = j * influenceMapScale + influenceMapOffsetX;
-                    int y = i * influenceMapScale + influenceMapOffsetY;
-                    if (x < 0) x = 0;
-                    if (x > 255) x = 255;
-                    if (y < 0) y = 0;
-                    if (y > 255) y = 255;
-                    influenceMap[y][x] = influenceMap[y][x] >> 1;
+                    influenceMap[i][j] = influenceMap[i][j] >> 2;
+                    influenceMapTex.SetPixel(j, i, new Color((255 - influenceMap[i][j])/256, 0, (influenceMap[i][j]/256),1));
                 }
             }
 
@@ -116,8 +111,8 @@ public class AIScript : MonoBehaviour {
         if (seeingPlayer)
         {
             int x, y;
-            x = ((((int)lastPlayerPos.x) - influenceMapOffsetX) / influenceMapScale);
-            y = ((((int)lastPlayerPos.z) - influenceMapOffsetY) / influenceMapScale);
+            x = ((((int)lastPlayerPos.x) + influenceMapOffsetX) / influenceMapScale);
+            y = ((((int)lastPlayerPos.z) + influenceMapOffsetY) / influenceMapScale);
             if (x < 0) x = 0;
             if (x > 255) x = 255;
             if (y < 0) y = 0;
