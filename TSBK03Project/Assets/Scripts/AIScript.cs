@@ -118,6 +118,10 @@ public class AIScript : MonoBehaviour {
             int x, y;
             x = ((((int)lastPlayerPos.x) - influenceMapOffsetX) / influenceMapScale);
             y = ((((int)lastPlayerPos.z) - influenceMapOffsetY) / influenceMapScale);
+            if (x < 0) x = 0;
+            if (x > 255) x = 255;
+            if (y < 0) y = 0;
+            if (y > 255) y = 255;
             this.influenceMap[y][x] = 255;
         }
 
