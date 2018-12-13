@@ -223,10 +223,12 @@ public class AIScript : MonoBehaviour {
 			AIScript other = (AIScript) handler.transform.GetChild(childCnt).GetComponent (typeof(AIScript));
 			other.ReceiveInfo(info);
 		}
+		//yield return new WaitForSeconds(2);
 	}
 
 	public void ReceiveInfo(AgentInfo otherInfo){
-		MergeInfluenceMaps (otherInfo.OtherInfluenceMap);
+		Debug.Log ("Ten-Four good buddy!");
+		//MergeInfluenceMaps (otherInfo.OtherInfluenceMap);
 		if (!(this.currentBehaviour == Behaviour.SeeingPlayer || this.currentBehaviour == Behaviour.CheckingLastPlayerPos)) {
 			if (otherInfo.OtherBehaviour == Behaviour.SeeingPlayer) {
 				this.currentBehaviour = Behaviour.CheckingLastPlayerPos;
@@ -258,7 +260,8 @@ public class AIScript : MonoBehaviour {
 				currentBehaviour = Behaviour.SeeingPlayer;
 			}
 		} else if (other.tag == "Agent") {
-			CommunicateShort (other.gameObject);
+			if(this.currentBehaviour == Behaviour.SeeingPlayer || this.currentBehaviour == Behaviour.CheckingLastPlayerPos) // only comunicate when needed
+				CommunicateShort (other.gameObject);
 		}
 	}
 
@@ -288,7 +291,8 @@ public class AIScript : MonoBehaviour {
 				currentBehaviour = Behaviour.SeeingPlayer;
 			}
 		}else if (other.tag == "Agent") {
-			CommunicateShort (other.gameObject);
+			if(this.currentBehaviour == Behaviour.SeeingPlayer || this.currentBehaviour == Behaviour.CheckingLastPlayerPos) // Only communicate when needed
+				CommunicateShort (other.gameObject);
 		}
 	}
 
