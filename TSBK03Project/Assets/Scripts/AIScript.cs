@@ -101,8 +101,13 @@ public class AIScript : MonoBehaviour {
             {
                 for (int j = 0; j < influenceMap[0].Length; j++)
                 {
-                    influenceMap[i*influenceMapScale + influenceMapOffsetY][j*influenceMapScale + influenceMapOffsetX] = 
-                        influenceMap[i * influenceMapScale + influenceMapOffsetY][j * influenceMapScale + influenceMapOffsetX] >> 1;
+                    int x = j * influenceMapScale + influenceMapOffsetX;
+                    int y = i * influenceMapScale + influenceMapOffsetY;
+                    if (x < 0) x = 0;
+                    if (x > 255) x = 255;
+                    if (y < 0) y = 0;
+                    if (y > 255) y = 255;
+                    influenceMap[y][x] = influenceMap[y][x] >> 1;
                 }
             }
 
@@ -110,7 +115,10 @@ public class AIScript : MonoBehaviour {
         //Add new values
         if (seeingPlayer)
         {
-            this.influenceMap[((((int) lastPlayerPos.z) - influenceMapOffsetY)/influenceMapScale)][((((int)lastPlayerPos.x) - influenceMapOffsetX) / influenceMapScale)] = 255;
+            int x, y;
+            x = ((((int)lastPlayerPos.x) - influenceMapOffsetX) / influenceMapScale);
+            y = ((((int)lastPlayerPos.z) - influenceMapOffsetY) / influenceMapScale);
+            this.influenceMap[y][x] = 255;
         }
 
         //Apply LP -filter
