@@ -23,9 +23,9 @@ public class PlayerScript : MonoBehaviour {
         moveHorizontal = Input.GetAxis("Horizontal");
 		moveStrafe = Input.GetAxis ("Strafe");
         this.transform.Translate(0, 0, moveVertical * playerSpeed, Space.Self);
-        this.transform.Rotate(360* moveHorizontal * Vector3.up * Time.deltaTime);
-		this.transform.Translate(moveStrafe * playerSpeed, 0, 0, Space.Self);
-
+		this.transform.Rotate(360* moveHorizontal * Vector3.up * Time.deltaTime * playerSpeed);
+		this.rb.velocity = Vector3.zero;
+		this.transform.Translate (moveStrafe * playerSpeed, 0, 0, Space.Self);
 
 	}
     
