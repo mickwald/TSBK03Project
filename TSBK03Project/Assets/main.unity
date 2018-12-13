@@ -296,6 +296,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerSpeed: 0.3
+  respawnTransform: {fileID: 951513095}
 --- !u!54 &138286873
 Rigidbody:
   m_ObjectHideFlags: 0
