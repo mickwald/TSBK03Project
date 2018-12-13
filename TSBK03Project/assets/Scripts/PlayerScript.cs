@@ -25,6 +25,7 @@ public class PlayerScript : MonoBehaviour {
         this.transform.Translate(0, 0, moveVertical * playerSpeed, Space.Self);
         this.transform.Rotate(360* moveHorizontal * Vector3.up * Time.deltaTime);
 		this.transform.Translate(moveStrafe * playerSpeed, 0, 0, Space.Self);
+        rb.velocity = Vector3.zero;
 
 
 	}
