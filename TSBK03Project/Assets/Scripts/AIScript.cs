@@ -247,7 +247,7 @@ public class AIScript : MonoBehaviour {
 	}
 
 	public void ReceiveInfo(AgentInfo otherInfo){
-		Debug.Log ("Ten-Four good buddy!");
+		//Debug.Log ("Ten-Four good buddy!");
 		//MergeInfluenceMaps (otherInfo.OtherInfluenceMap);
 		if (!(this.currentBehaviour == Behaviour.SeeingPlayer || this.currentBehaviour == Behaviour.CheckingLastPlayerPos)) {
 			if (otherInfo.OtherBehaviour == Behaviour.SeeingPlayer) {
