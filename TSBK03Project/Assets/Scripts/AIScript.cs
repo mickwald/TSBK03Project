@@ -350,8 +350,9 @@ public class AIScript : MonoBehaviour {
 			if (Physics.Raycast(transform.position, targetVec, out hit, 100.0f, layerMask))
 			{
 				Debug.DrawRay(transform.position, transform.TransformDirection(-targetVec) * hit.distance, Color.yellow);
-				//Debug.Log("Hit!");
-			}
+                //Debug.Log("Hit!");
+                this.currentBehaviour = Behaviour.CheckingLastPlayerPos;
+            }
 			else
 			{
 				Debug.DrawRay(transform.position, transform.TransformDirection(-targetVec) * 1000, Color.white);
