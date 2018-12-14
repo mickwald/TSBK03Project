@@ -119,7 +119,7 @@ public class AIScript : MonoBehaviour {
                 for (int j = 0; j < mapWidth; j++)
                 {
                     //influenceMap[i][j] = influenceMap[i][j] >> 2;
-                    Debug.Log("influence map value = " + influenceMap[i + 1][j + 1]);
+                    //Debug.Log("influence map value = " + influenceMap[i + 1][j + 1]);
                     influenceMapTex.SetPixel(j, i, new Color((255 - influenceMap[i + 1][j + 1]) / 256, 0, (influenceMap[i + 1][j + 1] / 256), 1));
                     influenceMapTex.SetPixel(j - 1, i, new Color((255 - influenceMap[i + 1][j + 1]) / 256, 0, (influenceMap[i + 1][j + 1] / 256), 1));
                     influenceMapTex.SetPixel(j + 1, i, new Color((255 - influenceMap[i + 1][j + 1]) / 256, 0, (influenceMap[i + 1][j + 1] / 256), 1));
