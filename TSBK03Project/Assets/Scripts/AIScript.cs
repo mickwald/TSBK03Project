@@ -20,11 +20,11 @@ public class AIScript : MonoBehaviour {
 	public enum Behaviour{Patrolling, SeeingPlayer, CheckingLastPlayerPos, Still};
 	public Behaviour currentBehaviour;
 	public Texture2D influenceMapTex;
-	public int mapHight;
+	public int mapHeight;
 	public int mapWidth;
     
 	private int choice;
-    private int[][] influenceMap;
+    private int[][] influenceMap, tempMap;
     private const double talkDistance = 5.0;
     private const int influenceMapOffsetX = -128;
     private const int influenceMapOffsetY = -128;
@@ -59,19 +59,26 @@ public class AIScript : MonoBehaviour {
 	void Start () {
 		handler = GameObject.FindGameObjectWithTag ("AIHandler");
         choice = -1;
-		mapHight = 256;
+		mapHeight = 256;
 		mapWidth = 256;
-		influenceMapTex = new Texture2D (mapHight, mapWidth,TextureFormat.ARGB32, false);
-		influenceMap = new int[mapHight][];
+		influenceMapTex = new Texture2D (mapHeight, mapWidth,TextureFormat.ARGB32, false);
+		influenceMap = new int[mapHeight+2][];
+        tempMap = new int[mapHeight+2][];
         for(int i = 0; i < influenceMap.Length; i++)
         {
-			influenceMap[i] = new int[mapWidth];
+			influenceMap[i] = new int[mapWidth+2];
+            tempMap[i] = new int[mapWidth+2];
             for(int j = 0; j < influenceMap[0].Length; j++)
             {
                 influenceMap[i][j] = 0;   //influenceMap[z][x]
-				influenceMapTex.SetPixel(i, j, new Color(0.5f, 0.5f, 0.5f, 1.0f));
+                tempMap[i][j] = 0;
+                if (i != 0 && i != 256 && j != 0 && j != 256)
+                {
+                    influenceMapTex.SetPixel(j-1, i-1, Color.white);
+                }
             }
         }
+        influenceMapTex.Apply();
         influenceMapUpdateTime = Time.time;
 		influenceMapTex.Apply ();
 		wayPointI = 0;
@@ -93,6 +100,12 @@ public class AIScript : MonoBehaviour {
         Debug.DrawRay(this.transform.position, this.transform.rotation * Vector3.forward*1000, Color.blue);
 	}
 
+    private void OnGUI()
+    {
+
+        GUI.DrawTexture(new Rect(0, 0, 256, 256), influenceMapTex);
+    }
+
     private void UpdateInfluenceMap()
     {
         if (Time.time - influenceMapUpdateTime >= 1)
@@ -101,33 +114,64 @@ public class AIScript : MonoBehaviour {
             influenceMapUpdateTime = Time.time;
 
             //Make old values depreciate
-            for (int i = 0; i < influenceMap.Length; i++)
+            for (int i = 0; i < mapHeight; i++)
             {
-                for (int j = 0; j < influenceMap[0].Length; j++)
+                for (int j = 0; j < mapWidth; j++)
                 {
-                    influenceMap[i][j] = influenceMap[i][j] >> 2;
-                    influenceMapTex.SetPixel(j, i, new Color((255 - influenceMap[i][j])/256, 0, (influenceMap[i][j]/256),1));
+                    //influenceMap[i][j] = influenceMap[i][j] >> 2;
+                    Debug.Log("influence map value = " + influenceMap[i + 1][j + 1]);
+                    influenceMapTex.SetPixel(j, i, new Color((255 - influenceMap[i + 1][j + 1]) / 256, 0, (influenceMap[i + 1][j + 1] / 256), 1));
+                    influenceMapTex.SetPixel(j - 1, i, new Color((255 - influenceMap[i + 1][j + 1]) / 256, 0, (influenceMap[i + 1][j + 1] / 256), 1));
+                    influenceMapTex.SetPixel(j + 1, i, new Color((255 - influenceMap[i + 1][j + 1]) / 256, 0, (influenceMap[i + 1][j + 1] / 256), 1));
+                    influenceMapTex.SetPixel(j, i + 1, new Color((255 - influenceMap[i + 1][j + 1]) / 256, 0, (influenceMap[i + 1][j + 1] / 256), 1));
+                    influenceMapTex.SetPixel(j, i - 1, new Color((255 - influenceMap[i + 1][j + 1]) / 256, 0, (influenceMap[i + 1][j + 1] / 256), 1));
                 }
             }
+            influenceMapTex.Apply();
 
         }
         //Add new values
         if (seeingPlayer)
         {
             int x, y;
-            x = ((((int)lastPlayerPos.x) + influenceMapOffsetX) / influenceMapScale);
-            y = ((((int)lastPlayerPos.z) + influenceMapOffsetY) / influenceMapScale);
+            x = ((((int)lastPlayerPos.x) - influenceMapOffsetX) / influenceMapScale);
+            y = ((((int)lastPlayerPos.z) - influenceMapOffsetY) / influenceMapScale);
             if (x < 0) x = 0;
             if (x > 255) x = 255;
             if (y < 0) y = 0;
             if (y > 255) y = 255;
-            this.influenceMap[y][x] = 255;
+            this.influenceMap[y + 1][x + 1] = 255;
         }
 
+        /*
         //Apply LP -filter
 
+        int tl, tc, tr, l, c, r, bl, bc, br;
+        for (int i = 0; i < mapHeight; i++)
+        {
+            for (int j = 0; j < mapWidth; j++)
+            {
+                //influenceMap is implemented with a 0 border, therefore indices might look off (imagine a +1 on all arguments, but +1-1 = 0 is not written)
+                tl = influenceMap[i][j];
+                tc = influenceMap[i][j + 1];
+                tr = influenceMap[i][j + 2];
+                l = influenceMap[i + 1][j];
+                c = influenceMap[i + 1][j + 1];
+                r = influenceMap[i + 1][j + 2];
+                bl = influenceMap[i + 2][j];
+                bc = influenceMap[i + 2][j + 1];
+                br = influenceMap[i + 2][j + 2];
 
+                tempMap[i + 1][j + 1] = (tl + 2 * tc + tr + 2 * l + 4 * c + 2 * r + bl + 2 * bc + br) / 16;
+                if (influenceMap[i + 1][j + 1] != 0)
+                {
+                    Debug.Log("Value in i, j = " + influenceMap[i + 1][j + 1] + ". (" + i + ", " + j + ")");
+                }
+            }
+        }
+        influenceMap = tempMap;
 
+        */
     }
 		
 
