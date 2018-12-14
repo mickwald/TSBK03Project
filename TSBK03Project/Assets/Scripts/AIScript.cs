@@ -8,97 +8,98 @@ using UnityEngine.AI;
 
 public class AIScript : MonoBehaviour {
 
-	public GameObject[] wayPoints; //probably should be in AIhandler and agent should call function to get waypoint CHANGE?
-	public int wayPointI;
-	public Transform currentWayPoint;
-	public float movementSpeed;
-	public float rotSpeed;
-	public Vector3 lastPlayerPos;
-	public bool seeingPlayer;
-	public bool checkingLastPlayerPos;
-	public bool atLastKnownPos;
-	public enum Behaviour{Patrolling, SeeingPlayer, CheckingLastPlayerPos, Still};
-	public Behaviour currentBehaviour;
-	public Texture2D influenceMapTex;
-	public int mapHeight;
-	public int mapWidth;
-    
-	private int choice;
+    public GameObject[] wayPoints; //probably should be in AIhandler and agent should call function to get waypoint CHANGE?
+    public int wayPointI;
+    public Transform currentWayPoint;
+    public float movementSpeed;
+    public float rotSpeed;
+    public Vector3 lastPlayerPos;
+    public bool seeingPlayer;
+    public bool checkingLastPlayerPos;
+    public bool atLastKnownPos;
+    public enum Behaviour { Patrolling, SeeingPlayer, CheckingLastPlayerPos, Still };
+    public Behaviour currentBehaviour;
+    public Texture2D influenceMapTex;
+    public int mapHeight;
+    public int mapWidth;
+
+    private bool influenceMapDecayTick;
+    private int choice;
     private int[][] influenceMap, tempMap;
     private const double talkDistance = 5.0;
     private const int influenceMapOffsetX = -128;
     private const int influenceMapOffsetY = -128;
     private const int influenceMapScale = 1;
-	private GameObject handler;
-	private int layerMask = 1 << 8; // Bit shift the index of the layer (8) to get a bit mask
+    private GameObject handler;
+    private int layerMask = 1 << 8; // Bit shift the index of the layer (8) to get a bit mask
     private float influenceMapUpdateTime;
-	private NavMeshAgent agent;
-	private bool setPath = false;
+    private NavMeshAgent agent;
+    private bool setPath = false;
 
 
     //Temp
     private Vector3 debugRayStart;
     private Vector3 debugRayDir;
     //
-    
-	public struct AgentInfo{
-		// Variables
-		public int[][] OtherInfluenceMap;
-		public Vector3 OtherPlayerPos;
-		public Behaviour OtherBehaviour;
 
-		//Constructor
-		public AgentInfo(int[][] otherInfluenceMap, Vector3 otherPlayerPos, Behaviour otherBehaviour){
-			this.OtherInfluenceMap = otherInfluenceMap;
-			this.OtherPlayerPos = otherPlayerPos;
-			this.OtherBehaviour = otherBehaviour;
-		}
-	}
+    public struct AgentInfo {
+        // Variables
+        public int[][] OtherInfluenceMap;
+        public Vector3 OtherPlayerPos;
+        public Behaviour OtherBehaviour;
 
-	// Use this for initialization
-	void Start () {
-		handler = GameObject.FindGameObjectWithTag ("AIHandler");
+        //Constructor
+        public AgentInfo(int[][] otherInfluenceMap, Vector3 otherPlayerPos, Behaviour otherBehaviour) {
+            this.OtherInfluenceMap = otherInfluenceMap;
+            this.OtherPlayerPos = otherPlayerPos;
+            this.OtherBehaviour = otherBehaviour;
+        }
+    }
+
+    // Use this for initialization
+    void Start() {
+        handler = GameObject.FindGameObjectWithTag("AIHandler");
         choice = -1;
-		mapHeight = 256;
-		mapWidth = 256;
-		influenceMapTex = new Texture2D (mapHeight, mapWidth,TextureFormat.ARGB32, false);
-		influenceMap = new int[mapHeight+2][];
-        tempMap = new int[mapHeight+2][];
-        for(int i = 0; i < influenceMap.Length; i++)
+        mapHeight = 256;
+        mapWidth = 256;
+        influenceMapTex = new Texture2D(mapHeight, mapWidth, TextureFormat.ARGB32, false);
+        influenceMap = new int[mapHeight + 2][];
+        tempMap = new int[mapHeight + 2][];
+        for (int i = 0; i < influenceMap.Length; i++)
         {
-			influenceMap[i] = new int[mapWidth+2];
-            tempMap[i] = new int[mapWidth+2];
-            for(int j = 0; j < influenceMap[0].Length; j++)
+            influenceMap[i] = new int[mapWidth + 2];
+            tempMap[i] = new int[mapWidth + 2];
+            for (int j = 0; j < influenceMap[0].Length; j++)
             {
                 influenceMap[i][j] = 0;   //influenceMap[z][x]
                 tempMap[i][j] = 0;
                 if (i != 0 && i != 256 && j != 0 && j != 256)
                 {
-                    influenceMapTex.SetPixel(j-1, i-1, Color.white);
+                    influenceMapTex.SetPixel(j - 1, i - 1, Color.white);
                 }
             }
         }
         influenceMapTex.Apply();
         influenceMapUpdateTime = Time.time;
-		influenceMapTex.Apply ();
-		wayPointI = 0;
-		movementSpeed = 5.0f;
-		rotSpeed = 2.0f;
-		seeingPlayer = false;
-		checkingLastPlayerPos = false;
-		atLastKnownPos = false;
-		layerMask = ~layerMask; // not the layer mask to target all layers BUT the unit layer (layer 8)
-		currentBehaviour = Behaviour.Patrolling;
-		agent = this.GetComponent<NavMeshAgent> ();
-	}
-	
-	// Update is called once per frame
-	void Update () {
+        influenceMapTex.Apply();
+        wayPointI = 0;
+        movementSpeed = 5.0f;
+        rotSpeed = 2.0f;
+        seeingPlayer = false;
+        checkingLastPlayerPos = false;
+        atLastKnownPos = false;
+        layerMask = ~layerMask; // not the layer mask to target all layers BUT the unit layer (layer 8)
+        currentBehaviour = Behaviour.Patrolling;
+        agent = this.GetComponent<NavMeshAgent>();
+    }
+
+    // Update is called once per frame
+    void Update() {
         UpdateInfluenceMap();
-		FindPath ();
-        Debug.DrawRay(debugRayStart, debugRayDir*1000, Color.green);
-        Debug.DrawRay(this.transform.position, this.transform.rotation * Vector3.forward*1000, Color.blue);
-	}
+        FindPath();
+        Debug.DrawRay(debugRayStart, debugRayDir * 1000, Color.green);
+        Debug.DrawRay(this.transform.position, this.transform.rotation * Vector3.forward * 1000, Color.blue);
+    }
 
     private void OnGUI()
     {
@@ -110,28 +111,28 @@ public class AIScript : MonoBehaviour {
     {
         if (Time.time - influenceMapUpdateTime >= 1)
         {
-            //Update when last update was made
-            influenceMapUpdateTime = Time.time;
-
-            //Make old values depreciate
-            for (int i = 0; i < mapHeight; i++)
-            {
-                for (int j = 0; j < mapWidth; j++)
-                {
-                    //influenceMap[i][j] = influenceMap[i][j] >> 2;
-                    //Debug.Log("influence map value = " + influenceMap[i + 1][j + 1]);
-                    influenceMapTex.SetPixel(j, i, new Color((255 - influenceMap[i + 1][j + 1]) / 256, 0, (influenceMap[i + 1][j + 1] / 256), 1));
-                    influenceMapTex.SetPixel(j - 1, i, new Color((255 - influenceMap[i + 1][j + 1]) / 256, 0, (influenceMap[i + 1][j + 1] / 256), 1));
-                    influenceMapTex.SetPixel(j + 1, i, new Color((255 - influenceMap[i + 1][j + 1]) / 256, 0, (influenceMap[i + 1][j + 1] / 256), 1));
-                    influenceMapTex.SetPixel(j, i + 1, new Color((255 - influenceMap[i + 1][j + 1]) / 256, 0, (influenceMap[i + 1][j + 1] / 256), 1));
-                    influenceMapTex.SetPixel(j, i - 1, new Color((255 - influenceMap[i + 1][j + 1]) / 256, 0, (influenceMap[i + 1][j + 1] / 256), 1));
-                }
-            }
-            influenceMapTex.Apply();
-
+            influenceMapDecayTick = true;
         }
+        //Make old values depreciate
+        for (int i = 0; i < mapHeight; i++)
+        {
+            for (int j = 0; j < mapWidth; j++)
+            {
+                if (influenceMapDecayTick)
+                {
+                    influenceMap[i+1][j+1] -= influenceMap[i+1][j+1] >> 4;
+                }
+                influenceMapTex.SetPixel(j, i, new Color((255 - influenceMap[i + 1][j + 1]) / 256f, 0, (influenceMap[i + 1][j + 1] / 256f), 1));
+            }
+        }
+        if(influenceMapDecayTick)
+        influenceMapUpdateTime = Time.time;
+        influenceMapDecayTick = false;
+        influenceMapTex.Apply();
+
+
         //Add new values
-        if (seeingPlayer)
+        if (currentBehaviour == Behaviour.SeeingPlayer)
         {
             int x, y;
             x = ((((int)lastPlayerPos.x) - influenceMapOffsetX) / influenceMapScale);
@@ -140,38 +141,21 @@ public class AIScript : MonoBehaviour {
             if (x > 255) x = 255;
             if (y < 0) y = 0;
             if (y > 255) y = 255;
-            this.influenceMap[y + 1][x + 1] = 255;
+
+            //Apply LP-filtered value
+            influenceMap[y][x] = (influenceMap[y][x] > 63) ? influenceMap[y][x] : 63;
+            influenceMap[y][x + 1] = (influenceMap[y][x + 1] > 127) ? influenceMap[y][x + 1] : 127;
+            influenceMap[y][x + 2] = (influenceMap[y][x + 2] > 63) ? influenceMap[y][x + 2] : 63;
+            influenceMap[y + 1][x] = (influenceMap[y + 1][x] > 127) ? influenceMap[y + 1][x] : 127;
+            influenceMap[y + 1][x + 1] = (influenceMap[y + 1][x + 1] > 255) ? influenceMap[y + 1][x + 1] : 255;
+            influenceMap[y + 1][x + 2] = (influenceMap[y + 1][x + 2] > 127) ? influenceMap[y + 1][x + 2] : 127;
+            influenceMap[y + 2][x] = (influenceMap[y + 2][x] > 63) ? influenceMap[y + 2][x] : 63;
+            influenceMap[y + 2][x + 1] = (influenceMap[y + 2][x + 1] > 127) ? influenceMap[y + 2][x + 1] : 127;
+            influenceMap[y + 2][x + 2] = (influenceMap[y + 2][x + 2] > 63) ? influenceMap[y + 2][x + 2] : 63;
         }
 
-        /*
-        //Apply LP -filter
 
-        int tl, tc, tr, l, c, r, bl, bc, br;
-        for (int i = 0; i < mapHeight; i++)
-        {
-            for (int j = 0; j < mapWidth; j++)
-            {
-                //influenceMap is implemented with a 0 border, therefore indices might look off (imagine a +1 on all arguments, but +1-1 = 0 is not written)
-                tl = influenceMap[i][j];
-                tc = influenceMap[i][j + 1];
-                tr = influenceMap[i][j + 2];
-                l = influenceMap[i + 1][j];
-                c = influenceMap[i + 1][j + 1];
-                r = influenceMap[i + 1][j + 2];
-                bl = influenceMap[i + 2][j];
-                bc = influenceMap[i + 2][j + 1];
-                br = influenceMap[i + 2][j + 2];
 
-                tempMap[i + 1][j + 1] = (tl + 2 * tc + tr + 2 * l + 4 * c + 2 * r + bl + 2 * bc + br) / 16;
-                if (influenceMap[i + 1][j + 1] != 0)
-                {
-                    Debug.Log("Value in i, j = " + influenceMap[i + 1][j + 1] + ". (" + i + ", " + j + ")");
-                }
-            }
-        }
-        influenceMap = tempMap;
-
-        */
     }
 		
 
@@ -201,7 +185,6 @@ public class AIScript : MonoBehaviour {
 		case Behaviour.Patrolling:
 			currentWayPoint = wayPoints [wayPointI].transform;
 			if ((int)this.transform.position.x == (int)currentWayPoint.position.x && (int)this.transform.position.z == (int)currentWayPoint.position.z) {
-				Debug.Log ("lol");
 				wayPointI++;
 				//currentWayPoint = wayPoints [wayPointI].transform;
 			}
