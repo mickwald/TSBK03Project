@@ -9,7 +9,6 @@ public class PlayerScript : MonoBehaviour {
     private float moveHorizontal;
 	private float moveStrafe;
     public float playerSpeed = .1f;
-	public Transform respawnTransform;
 	// Use this for initialization
 	void Start () {
         rb = this.GetComponent<Rigidbody>();
@@ -24,15 +23,10 @@ public class PlayerScript : MonoBehaviour {
         moveHorizontal = Input.GetAxis("Horizontal");
 		moveStrafe = Input.GetAxis ("Strafe");
         this.transform.Translate(0, 0, moveVertical * playerSpeed, Space.Self);
-        this.transform.Rotate(360* moveHorizontal * Vector3.up * Time.deltaTime);
-		this.transform.Translate(moveStrafe * playerSpeed, 0, 0, Space.Self);
-        rb.velocity = Vector3.zero;
+		this.transform.Rotate(360* moveHorizontal * Vector3.up * Time.deltaTime * playerSpeed);
+		this.rb.velocity = Vector3.zero;
+		this.transform.Translate (moveStrafe * playerSpeed, 0, 0, Space.Self);
 
-
-	}
-	public void respawn(){
-		this.transform.position = respawnTransform.position;
-		this.transform.rotation = respawnTransform.rotation;
 	}
     
 }
