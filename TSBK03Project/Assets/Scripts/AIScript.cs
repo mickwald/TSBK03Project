@@ -200,8 +200,11 @@ public class AIScript : MonoBehaviour {
 
 		case Behaviour.Patrolling:
 			currentWayPoint = wayPoints [wayPointI].transform;
-			if ((int)this.transform.position.x == (int)currentWayPoint.position.x && (int)this.transform.position.z == (int)currentWayPoint.position.z)
+			if ((int)this.transform.position.x == (int)currentWayPoint.position.x && (int)this.transform.position.z == (int)currentWayPoint.position.z) {
+				Debug.Log ("lol");
 				wayPointI++;
+				//currentWayPoint = wayPoints [wayPointI].transform;
+			}
 
 			if (wayPointI >= wayPoints.Length)
 				wayPointI = 0;
@@ -276,6 +279,8 @@ public class AIScript : MonoBehaviour {
         if (collision.gameObject.name == "Player")
         {
             Debug.Log("Game over!");
+			collision.gameObject.GetComponent<PlayerScript> ().respawn ();
+			currentBehaviour = Behaviour.Patrolling;
             
         }
         else
