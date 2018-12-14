@@ -120,7 +120,7 @@ public class AIScript : MonoBehaviour {
             {
                 if (influenceMapDecayTick)
                 {
-                    influenceMap[i+1][j+1] -= influenceMap[i+1][j+1] >> 4;
+                    influenceMap[i+1][j+1] -= influenceMap[i+1][j+1] >> 3;
                 }
                 influenceMapTex.SetPixel(j, i, new Color((255 - influenceMap[i + 1][j + 1]) / 256f, 0, (influenceMap[i + 1][j + 1] / 256f), 1));
             }
