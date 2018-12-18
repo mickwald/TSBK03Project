@@ -251,8 +251,8 @@ public class AIScript : MonoBehaviour {
 			break;
 		}
 
-        if (!still)
-            this.transform.Translate(movementSpeed*Vector3.forward*Time.deltaTime);
+        //if (!still)
+            //this.transform.Translate(movementSpeed*Vector3.forward*Time.deltaTime);
             //this.transform.position = new Vector3(newPos.x, 0.5f, newPos.z);
 		//this.transform.rotation = Quaternion.LookRotation(newDir);
 	}
@@ -284,7 +284,10 @@ public class AIScript : MonoBehaviour {
 	public void CommunicateShort( GameObject obj){
 		AIScript other = (AIScript)obj.GetComponent (typeof(AIScript));
 		AgentInfo info = new AgentInfo (this.influenceMap, this.lastPlayerPos, this.currentBehaviour);
-		other.ReceiveInfo (info);
+        if (other != null)
+        {
+            ((AIScript)other).ReceiveInfo(info);
+        }
 	}
 
 	public void ComminicateLong(){
