@@ -29,7 +29,7 @@ public class AIHandler : MonoBehaviour {
             tmp = Quaternion.Euler(0, Random.Range(0f, 360f), 0);
             newchild.transform.rotation = tmp;
             newchild.transform.position = new Vector3(Random.Range(0, 256) - 128, 1, Random.Range(0, 256) - 128);
-            Debug.Log(newchild.transform.position);
+            //Debug.Log(newchild.transform.position);
             for(int j = 0; j < this.waypoints.Length; j++)
             {
                 //Debug.Log("j = " + j + ", waypoint children = " + wayPointList.transform.childCount);
