@@ -184,7 +184,6 @@ public class AIScript : MonoBehaviour
         //Add new values
         if (currentBehaviour == Behaviour.SeeingPlayer)
         {
-            int x, y;
             x = ((((int)lastPlayerPos.x) - influenceMapOffsetX) / influenceMapScale);
             y = ((((int)lastPlayerPos.z) - influenceMapOffsetY) / influenceMapScale);
             if (x < 0) x = 0;
