@@ -18,12 +18,16 @@ public class AIScript : MonoBehaviour
     public bool seeingPlayer;
     public bool checkingLastPlayerPos;
     public bool atLastKnownPos;
-    public enum Behaviour { Patrolling, SeeingPlayer, CheckingLastPlayerPos, Still };
+    public enum Behaviour { Patrolling, SeeingPlayer, CheckingLastPlayerPos, Still, IMapNavigating };
     public Behaviour currentBehaviour;
     public Texture2D influenceMapTex;
     public int mapHeight;
     public int mapWidth;
 	public AIScript other;
+	public bool communicating = false;
+	public int comCounter;
+	public float IMapStartTime;
+	public float IMapScale = 5.0f;
 
     private bool influenceMapDecayTick;
     private int choice;
@@ -38,8 +42,7 @@ public class AIScript : MonoBehaviour
     private NavMeshAgent agent;
     private bool setPath = false;
     private bool drawTexture;
-	public bool communicating = false;
-	public int comCounter;
+
 
 
     //Temp
@@ -133,7 +136,7 @@ public class AIScript : MonoBehaviour
     {
         if (drawTexture)//this.transform == this.transform.parent.GetChild(0))
         {
-            GUI.DrawTexture(new Rect(0, 0, 2*256, 2*256), influenceMapTex);
+            GUI.DrawTexture(new Rect(0, 0, 256, 256), influenceMapTex);
         }
     }
 
@@ -257,7 +260,7 @@ public class AIScript : MonoBehaviour
 
 		case Behaviour.CheckingLastPlayerPos:
 			if ((int)this.transform.position.x == (int)lastPlayerPos.x && (int)this.transform.position.z == (int)lastPlayerPos.z)
-				currentBehaviour = Behaviour.Patrolling;
+				currentBehaviour = Behaviour.IMapNavigating;
 			if (!setPath) {
 				agent.SetDestination (lastPlayerPos);
 				setPath = true;
@@ -272,6 +275,40 @@ public class AIScript : MonoBehaviour
 			//newPos = Vector3.MoveTowards( this.transform.position, lastPlayerPos, this.movementSpeed * Time.deltaTime );
 			break;
 
+		case Behaviour.IMapNavigating:
+			int max = 0;
+			int current = 0;
+			int x, y = 0;
+			Vector3 IMapPos = Vector3.zero;
+			//Check 5x5 grid around agent in influencemap to get largets value from map
+			for (int i = 0; i < 11; i++) {
+				for (int j = 0; j < 11; j++) {
+					
+					x = ((((int)this.transform.position.x) - influenceMapOffsetX) / influenceMapScale);
+					y = ((((int)this.transform.position.z) - influenceMapOffsetY) / influenceMapScale);
+					current = this.influenceMap [y - 5 + i] [x - 5 + j];
+					if (current > max) {
+						max = current;
+						Vector3 newVec = new Vector3 (i - 5, this.transform.position.y, j - 5);
+						newVec.Normalize ();
+						IMapPos = this.transform.position + newVec * IMapScale;
+					}
+				}
+			}
+			//Debug.Log ("value " + this.influenceMap [y] [x]);
+			if (max == 0)
+				this.currentBehaviour = Behaviour.Patrolling;
+			if (!setPath) {
+				agent.SetDestination (IMapPos);
+				setPath = true;
+			} else {
+				NavMeshPath path = new NavMeshPath ();
+				agent.CalculatePath (IMapPos, path);
+				agent.SetPath (path);
+			}
+
+			break;
+			
 
 		case Behaviour.Still:
 			targetVec = currentWayPoint.position - this.transform.position;
