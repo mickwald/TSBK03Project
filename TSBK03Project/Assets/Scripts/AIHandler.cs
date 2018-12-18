@@ -5,16 +5,40 @@ using UnityEngine;
 public class AIHandler : MonoBehaviour {
 
     public GameObject prefab;
-    GameObject newchild;
-    int children = 0;
+    public int agentsWanted = 5;
+    public GameObject wayPointList;
+
+    private int children = 0;
+    private GameObject newchild;
+    private int[] waypoints;
+
 
 	// Use this for initialization
 	void Start () {
-        /*newchild = Instantiate(prefab,this.transform);
-        Quaternion tmp = newchild.transform.rotation;
-        tmp.Set(50, 50, 0, 1);
-        newchild.transform.rotation = tmp;
-        this.transform.position.Set(5, 5, 5);*/
+        waypoints = new int[4];
+        
+        for (int i = 0; i < agentsWanted; i++)
+        {
+
+            for (int a =0; a < waypoints.Length; a++)
+            {
+                waypoints[a] = Random.Range(0, wayPointList.transform.childCount);
+            }
+            newchild = Instantiate(prefab, this.transform);
+            Quaternion tmp = newchild.transform.rotation;
+            tmp = Quaternion.Euler(0, Random.Range(0f, 360f), 0);
+            newchild.transform.rotation = tmp;
+            newchild.transform.position = new Vector3(Random.Range(0, 256) - 128, 1, Random.Range(0, 256) - 128);
+            Debug.Log(newchild.transform.position);
+            for(int j = 0; j < this.waypoints.Length; j++)
+            {
+                //Debug.Log("j = " + j + ", waypoint children = " + wayPointList.transform.childCount);
+                newchild.GetComponent<AIScript>().wayPoints[j] = 
+                    wayPointList.transform.GetChild(waypoints[j]).gameObject;
+            }
+        }
+
+
 	}
 	
 	// Update is called once per frame

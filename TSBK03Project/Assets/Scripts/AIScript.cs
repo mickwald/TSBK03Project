@@ -36,7 +36,7 @@ public class AIScript : MonoBehaviour {
     private float influenceMapUpdateTime;
     private NavMeshAgent agent;
     private bool setPath = false;
-	public bool communicating = false; 
+	public bool communicating = false;
 	public int comCounter;
 
 
@@ -172,7 +172,7 @@ public class AIScript : MonoBehaviour {
 
 
     }
-		
+
 
     private void MergeInfluenceMaps(int[][] influenceMap)
     {
@@ -212,7 +212,7 @@ public class AIScript : MonoBehaviour {
 			newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
 			newPos = Vector3.MoveTowards( this.transform.position, currentWayPoint.position, this.movementSpeed * Time.deltaTime );*/
 			break;
-		
+
 		case Behaviour.SeeingPlayer:
 			if (!setPath) {
 				agent.SetDestination (lastPlayerPos);
@@ -226,7 +226,7 @@ public class AIScript : MonoBehaviour {
 			newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
 			newPos = Vector3.MoveTowards( this.transform.position, lastPlayerPos, this.movementSpeed * Time.deltaTime );*/
 			break;
-		
+
 		case Behaviour.CheckingLastPlayerPos:
 			if ((int)this.transform.position.x == (int)lastPlayerPos.x && (int)this.transform.position.z == (int)lastPlayerPos.z)
 				currentBehaviour = Behaviour.Patrolling;
@@ -238,20 +238,20 @@ public class AIScript : MonoBehaviour {
 				agent.CalculatePath (lastPlayerPos, path);
 				agent.SetPath (path);
 			}
-			
+
 			//targetVec = lastPlayerPos - this.transform.position;
 			//newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
 			//newPos = Vector3.MoveTowards( this.transform.position, lastPlayerPos, this.movementSpeed * Time.deltaTime );
 			break;
 
-		
+
 		case Behaviour.Still:
 			targetVec = currentWayPoint.position - this.transform.position;
 			newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
             newPos = this.transform.position;
 			still = true;
 			break;
-		
+
 		default:
 			Debug.Log ("Default!");
 			currentWayPoint = wayPoints [wayPointI].transform;
@@ -279,7 +279,7 @@ public class AIScript : MonoBehaviour {
             Debug.Log("Game over!");
 			collision.gameObject.GetComponent<PlayerScript> ().respawn ();
 			currentBehaviour = Behaviour.Patrolling;
-            
+
         }
         else
         {
@@ -299,9 +299,10 @@ public class AIScript : MonoBehaviour {
 	public void CommunicateShort( GameObject obj){
 		 other = (AIScript)obj.GetComponent (typeof(AIScript));
 		AgentInfo info = new AgentInfo (this.influenceMap, this.lastPlayerPos, this.currentBehaviour);
-		if (other != null) {
-			other.ReceiveInfo (info);
-		}
+        if (other != null)
+        {
+            ((AIScript)other).ReceiveInfo(info);
+        }
 	}
 
 	public void ComminicateLong(){
