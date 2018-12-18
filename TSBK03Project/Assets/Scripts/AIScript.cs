@@ -22,6 +22,7 @@ public class AIScript : MonoBehaviour {
     public Texture2D influenceMapTex;
     public int mapHeight;
     public int mapWidth;
+	public AIScript other;
 
     private bool influenceMapDecayTick;
     private int choice;
@@ -35,6 +36,8 @@ public class AIScript : MonoBehaviour {
     private float influenceMapUpdateTime;
     private NavMeshAgent agent;
     private bool setPath = false;
+	public bool communicating = false; 
+	public int comCounter;
 
 
     //Temp
@@ -83,7 +86,7 @@ public class AIScript : MonoBehaviour {
         influenceMapUpdateTime = Time.time;
         influenceMapTex.Apply();
         wayPointI = 0;
-        movementSpeed = 5.0f;
+        movementSpeed = 8.5f;
         rotSpeed = 2.0f;
         seeingPlayer = false;
         checkingLastPlayerPos = false;
@@ -91,10 +94,22 @@ public class AIScript : MonoBehaviour {
         layerMask = ~layerMask; // not the layer mask to target all layers BUT the unit layer (layer 8)
         currentBehaviour = Behaviour.Patrolling;
         agent = this.GetComponent<NavMeshAgent>();
+		comCounter = (int) (2.0f/Time.deltaTime);
+		agent.speed = movementSpeed;
     }
 
     // Update is called once per frame
     void Update() {
+		if (communicating) {
+			if (comCounter >= 0) {
+				agent.speed = 0.0f;
+				comCounter--;
+			} else {
+				agent.speed = movementSpeed;
+				comCounter = (int) (2.0f / Time.deltaTime);
+				communicating = false;
+			}
+		}
         UpdateInfluenceMap();
         FindPath();
         Debug.DrawRay(debugRayStart, debugRayDir * 1000, Color.green);
@@ -251,8 +266,8 @@ public class AIScript : MonoBehaviour {
 			break;
 		}
 
-        if (!still)
-            this.transform.Translate(movementSpeed*Vector3.forward*Time.deltaTime);
+        //if (!still)
+            //this.transform.Translate(movementSpeed*Vector3.forward*Time.deltaTime);
             //this.transform.position = new Vector3(newPos.x, 0.5f, newPos.z);
 		//this.transform.rotation = Quaternion.LookRotation(newDir);
 	}
@@ -282,12 +297,15 @@ public class AIScript : MonoBehaviour {
 	}
 
 	public void CommunicateShort( GameObject obj){
-		AIScript other = (AIScript)obj.GetComponent (typeof(AIScript));
+		 other = (AIScript)obj.GetComponent (typeof(AIScript));
 		AgentInfo info = new AgentInfo (this.influenceMap, this.lastPlayerPos, this.currentBehaviour);
-		other.ReceiveInfo (info);
+		if (other != null) {
+			other.ReceiveInfo (info);
+		}
 	}
 
 	public void ComminicateLong(){
+		communicating = true;
 		AgentInfo info = new AgentInfo (this.influenceMap, this.lastPlayerPos, this.currentBehaviour);
 		int childCnt = handler.transform.childCount;
 

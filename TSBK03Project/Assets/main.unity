@@ -3939,7 +3939,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 1774928243571388, guid: 78db27207e233b34a9996abfdfa90e31, type: 2}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 78db27207e233b34a9996abfdfa90e31, type: 2}
@@ -4117,6 +4117,10 @@ Prefab:
       propertyPath: wayPoints.Array.data[3]
       value: 
       objectReference: {fileID: 2082130529}
+    - target: {fileID: 1774928243571388, guid: 78db27207e233b34a9996abfdfa90e31, type: 2}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 78db27207e233b34a9996abfdfa90e31, type: 2}
   m_IsPrefabAsset: 0
