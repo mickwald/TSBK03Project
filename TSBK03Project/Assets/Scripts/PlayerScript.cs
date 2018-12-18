@@ -29,9 +29,9 @@ public class PlayerScript : MonoBehaviour {
         moveVertical = Input.GetAxis("Vertical");
         moveHorizontal = Input.GetAxis("Horizontal");
 		moveStrafe = Input.GetAxis ("Strafe");
-        this.transform.Translate(0, 0, moveVertical * playerSpeed, Space.Self);
+		this.transform.Translate(0, 0, moveVertical * playerSpeed * Time.deltaTime, Space.Self);
         this.transform.Rotate(360* moveHorizontal * Vector3.up * Time.deltaTime);
-		this.transform.Translate(moveStrafe * playerSpeed, 0, 0, Space.Self);
+		this.transform.Translate(moveStrafe * playerSpeed * Time.deltaTime, 0, 0, Space.Self);
         rb.velocity = Vector3.zero;
 		treasureText.text = "Treasure: " + treasureCount;
 

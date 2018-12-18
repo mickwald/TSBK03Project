@@ -7,6 +7,9 @@ public class AIHandler : MonoBehaviour {
     public GameObject prefab;
     public int agentsWanted = 5;
     public GameObject wayPointList;
+	public bool comLockShort;
+	public GameObject comLockShortHolder;
+	public bool releaseLock;
 
     private int children = 0;
     private GameObject newchild;
@@ -15,6 +18,7 @@ public class AIHandler : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+		comLockShort = false;
         waypoints = new int[4];
         
         for (int i = 0; i < agentsWanted; i++)
@@ -40,10 +44,40 @@ public class AIHandler : MonoBehaviour {
 
 
 	}
+
+	public bool AcquireComLockShort(GameObject holder){
+		//Debug.Log ("trying to get lock");
+		if (comLockShort) {
+			//Debug.Log ("DENIED");
+			return false;
+		} else {
+			//Debug.Log ("got lock");
+			comLockShort = true;
+			comLockShortHolder = holder;
+			return true;
+		}
+	}
+
+	public bool ReleaseComLockShort(GameObject releaser){
+		if (comLockShortHolder == releaser) {
+			if (comLockShort) {
+				releaseLock = true;
+				return true;
+			}
+			return false;
+		} else {
+			return false;
+		}
+	} 
 	
 	// Update is called once per frame
 	void Update ()
     {
+		if (releaseLock) {
+		
+		comLockShort = false;
+		comLockShortHolder = null;
+		}
         /*Vector3 tmp = newchild.transform.position;
         tmp.Set(10+ 10 * Mathf.Sin(Time.time), 0, 0);
         newchild.transform.position = tmp;

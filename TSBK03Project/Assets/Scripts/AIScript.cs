@@ -23,6 +23,7 @@ public class AIScript : MonoBehaviour
     public Texture2D influenceMapTex;
     public int mapHeight;
     public int mapWidth;
+	public AIScript other;
 
     private bool influenceMapDecayTick;
     private int choice;
@@ -37,6 +38,8 @@ public class AIScript : MonoBehaviour
     private NavMeshAgent agent;
     private bool setPath = false;
     private bool drawTexture;
+	public bool communicating = false;
+	public int comCounter;
 
 
     //Temp
@@ -88,7 +91,7 @@ public class AIScript : MonoBehaviour
         influenceMapUpdateTime = Time.time;
         influenceMapTex.Apply();
         wayPointI = 0;
-        movementSpeed = 5.0f;
+        movementSpeed = 8.5f;
         rotSpeed = 2.0f;
         seeingPlayer = false;
         checkingLastPlayerPos = false;
@@ -107,8 +110,19 @@ public class AIScript : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
-    {
+    void Update() {
+		comCounter = (int) (2.0f/Time.deltaTime);
+		agent.speed = movementSpeed;
+		if (communicating) {
+			if (comCounter >= 0) {
+				agent.speed = 0.0f;
+				comCounter--;
+			} else {
+				agent.speed = movementSpeed;
+				comCounter = (int) (2.0f / Time.deltaTime);
+				communicating = false;
+			}
+		}
         UpdateInfluenceMap();
         FindPath();
         Debug.DrawRay(debugRayStart, debugRayDir * 1000, Color.green);
@@ -201,92 +215,84 @@ public class AIScript : MonoBehaviour
     {
         return ((Math.Sqrt(Math.Pow(transform.position.x, 2) + Math.Pow(transform.position.y, 2) + Math.Pow(transform.position.z, 2)) - (Math.Sqrt(Math.Pow(child.position.x, 2) + Math.Pow(child.position.y, 2) + Math.Pow(child.position.z, 2)))));
     }
-    public void FindPath()
-    {
 
-        Vector3 targetVec;
-        Vector3 newDir;
-        Vector3 newPos;
-        bool still = false;
+	public void FindPath(){
 
-        switch (this.currentBehaviour)
-        {
+		Vector3 targetVec;
+		Vector3 newDir;
+		Vector3 newPos;
+		bool still = false;
 
-            case Behaviour.Patrolling:
-                currentWayPoint = wayPoints[wayPointI].transform;
-                if ((int)this.transform.position.x == (int)currentWayPoint.position.x && (int)this.transform.position.z == (int)currentWayPoint.position.z)
-                {
-                    wayPointI++;
-                    //currentWayPoint = wayPoints [wayPointI].transform;
-                }
+		switch (this.currentBehaviour){
 
-                if (wayPointI >= wayPoints.Length)
-                    wayPointI = 0;
-                agent.SetDestination(currentWayPoint.position);
+		case Behaviour.Patrolling:
+			currentWayPoint = wayPoints [wayPointI].transform;
+			if ((int)this.transform.position.x == (int)currentWayPoint.position.x && (int)this.transform.position.z == (int)currentWayPoint.position.z) {
+				wayPointI++;
+				//currentWayPoint = wayPoints [wayPointI].transform;
+			}
 
-                /*targetVec = currentWayPoint.position - this.transform.position;
-                newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
-                newPos = Vector3.MoveTowards( this.transform.position, currentWayPoint.position, this.movementSpeed * Time.deltaTime );*/
-                break;
+			if (wayPointI >= wayPoints.Length)
+				wayPointI = 0;
+			agent.SetDestination (currentWayPoint.position);
 
-            case Behaviour.SeeingPlayer:
-                if (!setPath)
-                {
-                    agent.SetDestination(lastPlayerPos);
-                    setPath = true;
-                }
-                else
-                {
-                    NavMeshPath path = new NavMeshPath();
-                    agent.CalculatePath(lastPlayerPos, path);
-                    agent.SetPath(path);
-                }
-                /*targetVec = lastPlayerPos - this.transform.position;
-                newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
-                newPos = Vector3.MoveTowards( this.transform.position, lastPlayerPos, this.movementSpeed * Time.deltaTime );*/
-                break;
+			/*targetVec = currentWayPoint.position - this.transform.position;
+			newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
+			newPos = Vector3.MoveTowards( this.transform.position, currentWayPoint.position, this.movementSpeed * Time.deltaTime );*/
+			break;
 
-            case Behaviour.CheckingLastPlayerPos:
-                if ((int)this.transform.position.x == (int)lastPlayerPos.x && (int)this.transform.position.z == (int)lastPlayerPos.z)
-                    currentBehaviour = Behaviour.Patrolling;
-                if (!setPath)
-                {
-                    agent.SetDestination(lastPlayerPos);
-                    setPath = true;
-                }
-                else
-                {
-                    NavMeshPath path = new NavMeshPath();
-                    agent.CalculatePath(lastPlayerPos, path);
-                    agent.SetPath(path);
-                }
+		case Behaviour.SeeingPlayer:
+			if (!setPath) {
+				agent.SetDestination (lastPlayerPos);
+				setPath = true;
+			} else {
+				NavMeshPath path = new NavMeshPath ();
+				agent.CalculatePath (lastPlayerPos, path);
+				agent.SetPath (path);
+			}
+			/*targetVec = lastPlayerPos - this.transform.position;
+			newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
+			newPos = Vector3.MoveTowards( this.transform.position, lastPlayerPos, this.movementSpeed * Time.deltaTime );*/
+			break;
 
-                //targetVec = lastPlayerPos - this.transform.position;
-                //newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
-                //newPos = Vector3.MoveTowards( this.transform.position, lastPlayerPos, this.movementSpeed * Time.deltaTime );
-                break;
+		case Behaviour.CheckingLastPlayerPos:
+			if ((int)this.transform.position.x == (int)lastPlayerPos.x && (int)this.transform.position.z == (int)lastPlayerPos.z)
+				currentBehaviour = Behaviour.Patrolling;
+			if (!setPath) {
+				agent.SetDestination (lastPlayerPos);
+				setPath = true;
+			} else {
+				NavMeshPath path = new NavMeshPath ();
+				agent.CalculatePath (lastPlayerPos, path);
+				agent.SetPath (path);
+			}
+
+			//targetVec = lastPlayerPos - this.transform.position;
+			//newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
+			//newPos = Vector3.MoveTowards( this.transform.position, lastPlayerPos, this.movementSpeed * Time.deltaTime );
+			break;
 
 
-            case Behaviour.Still:
-                targetVec = currentWayPoint.position - this.transform.position;
-                newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed * Time.deltaTime, 0.0f);
-                newPos = this.transform.position;
-                still = true;
-                break;
+		case Behaviour.Still:
+			targetVec = currentWayPoint.position - this.transform.position;
+			newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
+            newPos = this.transform.position;
+			still = true;
+			break;
 
-            default:
-                Debug.Log("Default!");
-                currentWayPoint = wayPoints[wayPointI].transform;
-                if ((int)this.transform.position.x == (int)currentWayPoint.position.x && (int)this.transform.position.z == (int)currentWayPoint.position.z)
-                    wayPointI++;
+		default:
+			Debug.Log ("Default!");
+			currentWayPoint = wayPoints [wayPointI].transform;
+			if ((int)this.transform.position.x == (int)currentWayPoint.position.x && (int)this.transform.position.z == (int)currentWayPoint.position.z)
+				wayPointI++;
 
-                if (wayPointI >= wayPoints.Length)
-                    wayPointI = 0;
-                targetVec = currentWayPoint.position - this.transform.position;
-                newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed * Time.deltaTime, 0.0f);
-                newPos = Vector3.MoveTowards(this.transform.position, currentWayPoint.position, this.movementSpeed * Time.deltaTime);
-                break;
-        }
+			if (wayPointI >= wayPoints.Length)
+				wayPointI = 0;
+			targetVec = currentWayPoint.position - this.transform.position;
+			newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed*Time.deltaTime, 0.0f);
+			newPos = Vector3.MoveTowards( this.transform.position, currentWayPoint.position, this.movementSpeed * Time.deltaTime );
+			break;
+		}
 
         //if (!still)
         //this.transform.Translate(movementSpeed*Vector3.forward*Time.deltaTime);
@@ -317,122 +323,114 @@ public class AIScript : MonoBehaviour
 
         //Debug.Log (collision.gameObject.name);
     }
-
-    public void CommunicateShort(GameObject obj)
-    {
-        AIScript other = (AIScript)obj.GetComponent(typeof(AIScript));
-        AgentInfo info = new AgentInfo(this.influenceMap, this.lastPlayerPos, this.currentBehaviour);
+    
+	public void CommunicateShort( GameObject obj){
+		 other = (AIScript)obj.GetComponent (typeof(AIScript));
+		AgentInfo info = new AgentInfo (this.influenceMap, this.lastPlayerPos, this.currentBehaviour);
         if (other != null)
         {
             ((AIScript)other).ReceiveInfo(info);
         }
-    }
 
-    public void ComminicateLong()
-    {
-        AgentInfo info = new AgentInfo(this.influenceMap, this.lastPlayerPos, this.currentBehaviour);
-        int childCnt = handler.transform.childCount;
+	}
 
-        for (int i = 0; i < childCnt; i++)
-        {
-            AIScript other = (AIScript)handler.transform.GetChild(childCnt).GetComponent(typeof(AIScript));
-            other.ReceiveInfo(info);
-        }
-        //yield return new WaitForSeconds(2);
-    }
+	public void ComminicateLong(){
+		communicating = true;
+		AgentInfo info = new AgentInfo (this.influenceMap, this.lastPlayerPos, this.currentBehaviour);
+		int childCnt = handler.transform.childCount;
 
-    public void ReceiveInfo(AgentInfo otherInfo)
-    {
-        //Debug.Log ("Ten-Four good buddy!");
-        //MergeInfluenceMaps (otherInfo.OtherInfluenceMap);
-        if (!(this.currentBehaviour == Behaviour.SeeingPlayer || this.currentBehaviour == Behaviour.CheckingLastPlayerPos))
-        {
-            if (otherInfo.OtherBehaviour == Behaviour.SeeingPlayer)
-            {
-                this.currentBehaviour = Behaviour.CheckingLastPlayerPos;
-                this.lastPlayerPos = otherInfo.OtherPlayerPos;
-            }
-        }
-    }
+		for (int i = 0; i < childCnt; i++) {
+			AIScript other = (AIScript) handler.transform.GetChild(childCnt).GetComponent (typeof(AIScript));
+			other.ReceiveInfo(info);
+		}
+		//yield return new WaitForSeconds(2);
+	}
 
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.tag == "Player")
-        {
-            Vector3 targetVec = other.transform.position - this.transform.position;
-            targetVec.y = 0.0f;
-            RaycastHit hit;
-            // Does the ray intersect any objects excluding the player layer
-            if (Physics.Raycast(transform.position, targetVec, out hit, 10.0f, layerMask))
-            {
-                Debug.DrawRay(transform.position, targetVec * hit.distance, Color.black);
-                //Debug.Log("Blocked!");
-                if (seeingPlayer)
-                    currentBehaviour = Behaviour.CheckingLastPlayerPos;
-            }
-            else
-            {
-                Debug.DrawRay(transform.position, targetVec * hit.distance, Color.black);
+	public void ReceiveInfo(AgentInfo otherInfo){
+		//Debug.Log ("Ten-Four good buddy!");
+		//MergeInfluenceMaps (otherInfo.OtherInfluenceMap);
+		if (!(this.currentBehaviour == Behaviour.SeeingPlayer || this.currentBehaviour == Behaviour.CheckingLastPlayerPos)) {
+			if (otherInfo.OtherBehaviour == Behaviour.SeeingPlayer) {
+				this.currentBehaviour = Behaviour.CheckingLastPlayerPos;
+				this.lastPlayerPos = otherInfo.OtherPlayerPos;
+			}
+		}
+	}
 
-                //Debug.Log("Clear!");
-                //Debug.Log ("Intuder!");
-                lastPlayerPos = other.transform.position;
-                lastPlayerPos.y = 0.0f;
-                seeingPlayer = true;
-                currentBehaviour = Behaviour.SeeingPlayer;
-            }
-        }
-        else if (other.tag == "Agent")
-        {
-            if (this.currentBehaviour == Behaviour.SeeingPlayer || this.currentBehaviour == Behaviour.CheckingLastPlayerPos) // only comunicate when needed
-                CommunicateShort(other.gameObject);
-        }
-    }
+	private void OnTriggerEnter(Collider other)
+	{
+		if (other.tag == "Player") {
+			Vector3 targetVec = other.transform.position - this.transform.position;
+			targetVec.y = 0.0f;
+			RaycastHit hit;
+			// Does the ray intersect any objects excluding the player layer
+			if (Physics.Raycast (transform.position, targetVec, out hit, 10.0f, layerMask)) {
+				Debug.DrawRay (transform.position, targetVec * hit.distance, Color.black);
+				//Debug.Log("Blocked!");
+				if (seeingPlayer)
+					currentBehaviour = Behaviour.CheckingLastPlayerPos;
+			} else {
+				Debug.DrawRay (transform.position, targetVec * hit.distance, Color.black);
 
-    private void OnTriggerStay(Collider other)
-    {
-        if (other.tag == "Player")
-        {
-            Vector3 targetVec = other.transform.position - this.transform.position;
-            targetVec.y = 0.0f;
-            RaycastHit hit;
-            // Does the ray intersect any objects excluding the player layer
-            if (Physics.Raycast(transform.position, targetVec, out hit, 10.0f, layerMask))
-            {
-                Debug.DrawRay(transform.position, targetVec * hit.distance, Color.black);
-                //Debug.Log("Blocked!");
-                if (seeingPlayer)
-                    currentBehaviour = Behaviour.CheckingLastPlayerPos;
-            }
-            else
-            {
-                Debug.DrawRay(transform.position, targetVec * hit.distance, Color.black);
+				//Debug.Log("Clear!");
+				//Debug.Log ("Intuder!");
+				lastPlayerPos = other.transform.position;
+				lastPlayerPos.y = 0.0f;
+				seeingPlayer = true;
+				currentBehaviour = Behaviour.SeeingPlayer;
+			}
+		} else if (other.tag == "Agent") {
+			if (this.currentBehaviour == Behaviour.SeeingPlayer || this.currentBehaviour == Behaviour.CheckingLastPlayerPos) {// only comunicate when needed
+				if (this.transform.parent.GetComponent<AIHandler> ().AcquireComLockShort (this.gameObject)) {
+					//Debug.Log ("communicate");
+					CommunicateShort (other.gameObject);
+					this.transform.parent.GetComponent<AIHandler> ().ReleaseComLockShort (this.gameObject);
+				} else {
+					//Debug.Log ("can't communicate!");
+				}
+			} 				
+		}
+	}
+	private void OnTriggerStay(Collider other)
+	{
+		if (other.tag == "Player") {
+			Vector3 targetVec = other.transform.position - this.transform.position;
+			targetVec.y = 0.0f;
+			RaycastHit hit;
+			// Does the ray intersect any objects excluding the player layer
+			if (Physics.Raycast(transform.position, targetVec, out hit, 10.0f, layerMask))
+			{
+				Debug.DrawRay (transform.position, targetVec * hit.distance, Color.black);
+				//Debug.Log("Blocked!");
+				if (seeingPlayer)
+					currentBehaviour = Behaviour.CheckingLastPlayerPos;
+			}
+			else
+			{
+				Debug.DrawRay(transform.position, targetVec * hit.distance, Color.black);
 
-                //Debug.Log("Clear!");
-                //Debug.Log ("On the chase!");
-                lastPlayerPos = other.transform.position;
-                lastPlayerPos.y = 0.0f;
-                seeingPlayer = true;
-                currentBehaviour = Behaviour.SeeingPlayer;
-            }
-        }
-        else if (other.tag == "Agent")
-        {
-            //if(this.currentBehaviour == Behaviour.SeeingPlayer || this.currentBehaviour == Behaviour.CheckingLastPlayerPos) // Only communicate when needed
-            //CommunicateShort (other.gameObject);
-        }
-    }
+				//Debug.Log("Clear!");
+				//Debug.Log ("On the chase!");
+				lastPlayerPos = other.transform.position;
+				lastPlayerPos.y = 0.0f;
+				seeingPlayer = true;
+				currentBehaviour = Behaviour.SeeingPlayer;
+			}
+		}else if (other.tag == "Agent") {
+			if(this.currentBehaviour == Behaviour.SeeingPlayer || this.currentBehaviour == Behaviour.CheckingLastPlayerPos) // Only communicate when needed
+				CommunicateShort (other.gameObject);
+		}
+	}
 
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.tag == "Player")
-        {
-            Vector3 targetVec = other.transform.position - this.transform.position;
-            RaycastHit hit;
-            // Does the ray intersect any objects excluding the player layer
-            if (Physics.Raycast(transform.position, targetVec, out hit, 100.0f, layerMask))
-            {
-                Debug.DrawRay(transform.position, transform.TransformDirection(-targetVec) * hit.distance, Color.yellow);
+	private void OnTriggerExit(Collider other)
+	{
+		if (other.tag == "Player") {
+			Vector3 targetVec = other.transform.position - this.transform.position;
+			RaycastHit hit;
+			// Does the ray intersect any objects excluding the player layer
+			if (Physics.Raycast(transform.position, targetVec, out hit, 100.0f, layerMask))
+			{
+				Debug.DrawRay(transform.position, transform.TransformDirection(-targetVec) * hit.distance, Color.yellow);
                 //Debug.Log("Hit!");
                 this.currentBehaviour = Behaviour.CheckingLastPlayerPos;
             }
