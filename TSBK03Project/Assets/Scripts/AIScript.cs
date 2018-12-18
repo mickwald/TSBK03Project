@@ -351,11 +351,17 @@ public class AIScript : MonoBehaviour {
 				currentBehaviour = Behaviour.SeeingPlayer;
 			}
 		} else if (other.tag == "Agent") {
-			if(this.currentBehaviour == Behaviour.SeeingPlayer || this.currentBehaviour == Behaviour.CheckingLastPlayerPos) // only comunicate when needed
-				CommunicateShort (other.gameObject);
+			if (this.currentBehaviour == Behaviour.SeeingPlayer || this.currentBehaviour == Behaviour.CheckingLastPlayerPos) {// only comunicate when needed
+				if (this.transform.parent.GetComponent<AIHandler> ().AcquireComLockShort (this.gameObject)) {
+					//Debug.Log ("communicate");
+					CommunicateShort (other.gameObject);
+					this.transform.parent.GetComponent<AIHandler> ().ReleaseComLockShort (this.gameObject);
+				} else {
+					//Debug.Log ("can't communicate!");
+				}
+			} 				
 		}
 	}
-
 	private void OnTriggerStay(Collider other)
 	{
 		if (other.tag == "Player") {

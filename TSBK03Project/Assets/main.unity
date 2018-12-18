@@ -300,7 +300,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee940b96a221c2642bf69648911d2462, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerSpeed: 0.3
+  playerSpeed: 10
   respawnTransform: {fileID: 951513095}
   treasureCount: 0
   treasureText: {fileID: 832743321}
@@ -3877,8 +3877,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefab: {fileID: 1774928243571388, guid: 78db27207e233b34a9996abfdfa90e31, type: 2}
-  agentsWanted: 15
+  agentsWanted: 4
   wayPointList: {fileID: 996646349}
+  comLockShort: 0
+  comLockShortHolder: {fileID: 0}
+  releaseLock: 0
 --- !u!1001 &1445257383
 Prefab:
   m_ObjectHideFlags: 0
@@ -3949,7 +3952,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 1774928243571388, guid: 78db27207e233b34a9996abfdfa90e31, type: 2}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 78db27207e233b34a9996abfdfa90e31, type: 2}
