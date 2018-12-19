@@ -43,8 +43,8 @@ public class AIScript : MonoBehaviour
     private bool setPath = false;
     private bool drawTexture;
     private int textureChild;
-    private int texUpdateTick;
-    private bool texUpdate;
+    private int infMapUpdateTick;
+    private bool infMapUpdate;
 
 
 
@@ -105,7 +105,7 @@ public class AIScript : MonoBehaviour
         layerMask = ~layerMask; // not the layer mask to target all layers BUT the unit layer (layer 8)
         currentBehaviour = Behaviour.Patrolling;
         agent = this.GetComponent<NavMeshAgent>();
-        texUpdateTick = (10+this.transform.parent.childCount)-this.transform.GetSiblingIndex();
+        infMapUpdateTick = (10+this.transform.parent.childCount)-this.transform.GetSiblingIndex();
         Debug.Log(this.transform.GetSiblingIndex());
         textureChild = 2;
         if (this.transform == this.transform.parent.GetChild(textureChild))
@@ -116,6 +116,11 @@ public class AIScript : MonoBehaviour
         {
             drawTexture = false;
         }
+    }
+
+    internal void SetInfMapUpdate()
+    {
+        this.infMapUpdate = true;
     }
 
     // Update is called once per frame
@@ -171,14 +176,14 @@ public class AIScript : MonoBehaviour
         {
             influenceMapDecayTick = true;
         }
-        if(texUpdateTick == 0)
+        if(infMapUpdateTick == 0)
         {
-            texUpdateTick = 4;
-            texUpdate = true;
+            infMapUpdateTick = 4;
+            infMapUpdate = true;
         } else
         {
-            texUpdate = false;
-            texUpdateTick--;
+            infMapUpdate = false;
+            infMapUpdateTick--;
         }
         int x, y;
         x = ((((int)this.transform.position.x) - influenceMapOffsetX) / influenceMapScale);
@@ -189,7 +194,7 @@ public class AIScript : MonoBehaviour
         if (y > 255) y = 255;
         influenceMap[y][x] = 0;
         //Make old values depreciate
-        if (influenceMapDecayTick || drawTexture)
+        if ((influenceMapDecayTick || drawTexture) && infMapUpdate)
         {
             for (int i = 0; i < mapHeight; i++)
             {
@@ -199,14 +204,14 @@ public class AIScript : MonoBehaviour
                     {
                         influenceMap[i + 1][j + 1] -= influenceMap[i + 1][j + 1] >> 2;
                     }
-                    if (drawTexture && texUpdate)
+                    if (drawTexture && infMapUpdate)
                     {
                         influenceMapTex.SetPixel(j, i, new Color((255 - influenceMap[i + 1][j + 1]) / 256f, 0, (influenceMap[i + 1][j + 1] / 256f), 1));
                     }
                 }
             }
         }
-        if (influenceMapDecayTick)
+        if (influenceMapDecayTick && infMapUpdate)
         {
             influenceMapUpdateTime = Time.time;
             influenceMapDecayTick = false;

@@ -91,7 +91,7 @@ public class AIHandler : MonoBehaviour {
         }
         if (textureChildIndex < 2)
             textureChildIndex = 2;
-
+        this.transform.GetChild(textureChildIndex).GetComponent<AIScript>().SetInfMapUpdate();
         /*Vector3 tmp = newchild.transform.position;
         tmp.Set(10+ 10 * Mathf.Sin(Time.time), 0, 0);
         newchild.transform.position = tmp;
