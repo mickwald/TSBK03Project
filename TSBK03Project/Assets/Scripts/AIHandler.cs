@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,25 +15,27 @@ public class AIHandler : MonoBehaviour {
     private int children = 0;
     private GameObject newchild;
     private int[] waypoints;
+    private int textureChildIndex;
+    private bool jumpPressed = false;
 
 
 	// Use this for initialization
 	void Start () {
 		comLockShort = false;
         waypoints = new int[4];
-        
+        textureChildIndex = 2;
         for (int i = 0; i < agentsWanted; i++)
         {
-
+            children++;
             for (int a =0; a < waypoints.Length; a++)
             {
-                waypoints[a] = Random.Range(0, wayPointList.transform.childCount);
+                waypoints[a] = UnityEngine.Random.Range(0, wayPointList.transform.childCount);
             }
             newchild = Instantiate(prefab, this.transform);
             Quaternion tmp = newchild.transform.rotation;
-            tmp = Quaternion.Euler(0, Random.Range(0f, 360f), 0);
+            tmp = Quaternion.Euler(0, UnityEngine.Random.Range(0f, 360f), 0);
             newchild.transform.rotation = tmp;
-            newchild.transform.position = new Vector3(Random.Range(0, 256) - 128, 1, Random.Range(0, 256) - 128);
+            newchild.transform.position = new Vector3(UnityEngine.Random.Range(0, 256) - 128, 1, UnityEngine.Random.Range(0, 256) - 128);
             //Debug.Log(newchild.transform.position);
             for(int j = 0; j < this.waypoints.Length; j++)
             {
@@ -78,6 +81,17 @@ public class AIHandler : MonoBehaviour {
 		comLockShort = false;
 		comLockShortHolder = null;
 		}
+        if (!Input.GetButton("Jump") && jumpPressed)
+            jumpPressed = false;
+        if (Input.GetButton("Jump") && !jumpPressed)
+        {
+            jumpPressed = true;
+            textureChildIndex = (textureChildIndex + 1) % agentsWanted;
+            Debug.Log("textureChildIndex = " + textureChildIndex);
+        }
+        if (textureChildIndex < 2)
+            textureChildIndex = 2;
+
         /*Vector3 tmp = newchild.transform.position;
         tmp.Set(10+ 10 * Mathf.Sin(Time.time), 0, 0);
         newchild.transform.position = tmp;
@@ -86,6 +100,8 @@ public class AIHandler : MonoBehaviour {
         this.transform.position = pos;*/
     }
 
-    
-    
+    internal int GetTextureChild()
+    {
+        return textureChildIndex;
+    }
 }
