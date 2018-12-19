@@ -3877,7 +3877,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefab: {fileID: 1774928243571388, guid: 78db27207e233b34a9996abfdfa90e31, type: 2}
-  agentsWanted: 10
+  agentsWanted: 12
   wayPointList: {fileID: 996646349}
   comLockShort: 0
   comLockShortHolder: {fileID: 0}

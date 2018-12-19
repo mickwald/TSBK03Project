@@ -105,7 +105,7 @@ public class AIScript : MonoBehaviour
         layerMask = ~layerMask; // not the layer mask to target all layers BUT the unit layer (layer 8)
         currentBehaviour = Behaviour.Patrolling;
         agent = this.GetComponent<NavMeshAgent>();
-        infMapUpdateTick = (10+this.transform.parent.childCount)-this.transform.GetSiblingIndex();
+        infMapUpdateTick = (3+this.transform.parent.childCount)-this.transform.GetSiblingIndex();
         Debug.Log(this.transform.GetSiblingIndex());
         textureChild = 2;
         if (this.transform == this.transform.parent.GetChild(textureChild))
@@ -178,7 +178,7 @@ public class AIScript : MonoBehaviour
         }
         if(infMapUpdateTick == 0)
         {
-            infMapUpdateTick = 4;
+            infMapUpdateTick = 4;       // 1/(x+1)th framerate on the texture update as well as the decay
             infMapUpdate = true;
         } else
         {
