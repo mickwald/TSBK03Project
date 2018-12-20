@@ -30,7 +30,7 @@ public class AIScript : MonoBehaviour
     public float IMapScale = 5.0f;
 
     private bool influenceMapDecayTick;
-    private int choice;
+    //private int choice;
     private int[][] influenceMap, tempMap;
     private const double talkDistance = 5.0;
     private const int influenceMapOffsetX = -128;
@@ -73,7 +73,7 @@ public class AIScript : MonoBehaviour
     void Start()
     {
         handler = GameObject.FindGameObjectWithTag("AIHandler");
-        choice = -1;
+        //choice = -1;
         mapHeight = 256;
         mapWidth = 256;
         influenceMapTex = new Texture2D(mapHeight, mapWidth, TextureFormat.ARGB32, false);
@@ -106,7 +106,7 @@ public class AIScript : MonoBehaviour
         currentBehaviour = Behaviour.Patrolling;
         agent = this.GetComponent<NavMeshAgent>();
         infMapUpdateTick = (3+this.transform.parent.childCount)-this.transform.GetSiblingIndex();
-        Debug.Log(this.transform.GetSiblingIndex());
+        //Debug.Log(this.transform.GetSiblingIndex());
         textureChild = 2;
         if (this.transform == this.transform.parent.GetChild(textureChild))
         {
@@ -269,9 +269,9 @@ public class AIScript : MonoBehaviour
     {
 
         Vector3 targetVec;
-        Vector3 newDir;
+        //Vector3 newDir;
         Vector3 newPos;
-        bool still = false;
+        //bool still = false;
 
         switch (this.currentBehaviour)
         {
@@ -374,9 +374,9 @@ public class AIScript : MonoBehaviour
 
             case Behaviour.Still:
                 targetVec = currentWayPoint.position - this.transform.position;
-                newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed * Time.deltaTime, 0.0f);
+                //newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed * Time.deltaTime, 0.0f);
                 newPos = this.transform.position;
-                still = true;
+                //still = true;
                 break;
 
             default:
@@ -388,7 +388,7 @@ public class AIScript : MonoBehaviour
                 if (wayPointI >= wayPoints.Length)
                     wayPointI = 0;
                 targetVec = currentWayPoint.position - this.transform.position;
-                newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed * Time.deltaTime, 0.0f);
+                //newDir = Vector3.RotateTowards(transform.forward, targetVec, rotSpeed * Time.deltaTime, 0.0f);
                 newPos = Vector3.MoveTowards(this.transform.position, currentWayPoint.position, this.movementSpeed * Time.deltaTime);
                 break;
         }
@@ -470,16 +470,16 @@ public class AIScript : MonoBehaviour
             targetVec.y = 0.0f;
             RaycastHit hit;
             // Does the ray intersect any objects excluding the player layer
-            if (Physics.Raycast(transform.position, targetVec, out hit, 10.0f, layerMask))
+            if (Physics.Raycast(transform.position, targetVec, out hit, 20.0f, layerMask))
             {
-                Debug.DrawRay(transform.position, targetVec * hit.distance, Color.black);
+                Debug.DrawRay(transform.position, targetVec * hit.distance, Color.red);
                 //Debug.Log("Blocked!");
                 if (seeingPlayer)
                     currentBehaviour = Behaviour.CheckingLastPlayerPos;
             }
             else
             {
-                Debug.DrawRay(transform.position, targetVec * hit.distance, Color.black);
+                Debug.DrawRay(transform.position, targetVec * hit.distance, Color.red);
 
                 //Debug.Log("Clear!");
                 //Debug.Log ("Intuder!");
@@ -514,7 +514,7 @@ public class AIScript : MonoBehaviour
             targetVec.y = 0.0f;
             RaycastHit hit;
             // Does the ray intersect any objects excluding the player layer
-            if (Physics.Raycast(transform.position, targetVec, out hit, 10.0f, layerMask))
+            if (Physics.Raycast(transform.position, targetVec, out hit, 20.0f, layerMask))
             {
                 Debug.DrawRay(transform.position, targetVec * hit.distance, Color.black);
                 //Debug.Log("Blocked!");
@@ -564,8 +564,10 @@ public class AIScript : MonoBehaviour
             }
         }
     }
-	public void SetSpeed(float f){
-		//this.agent.speed = f;
+	public void SetSpeed(float speed){
+        this.movementSpeed = speed;
+        
+        //this.agent.speed = 1.0f;
 		//this.agent.acceleration = f;
 	}
 }

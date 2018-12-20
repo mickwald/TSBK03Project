@@ -31,7 +31,7 @@ public class AIHandler : MonoBehaviour {
             for (int a = 0; a < waypoints.Length; a++)
             {
                 waypoints[a] = (a + 4 * i) % wayPointList.transform.childCount;
-                Debug.Log(waypoints[a]);
+                //Debug.Log(waypoints[a]);
             }
             newchild = Instantiate(prefab, this.transform);
             Quaternion tmp = newchild.transform.rotation;

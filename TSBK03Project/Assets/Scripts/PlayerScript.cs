@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,9 +22,14 @@ public class PlayerScript : MonoBehaviour {
 		treasureCount = 0;
 		treasureList = GameObject.FindGameObjectsWithTag ("Treasure");
     }
-	
-	// Update is called once per frame
-	void Update () {
+
+    internal void Win()
+    {
+        this.playerSpeed = 0f;
+    }
+
+    // Update is called once per frame
+    void Update () {
         this.transform.rotation = Quaternion.Euler(0, this.transform.rotation.eulerAngles.y, 0);
 		this.transform.position = new Vector3(transform.position.x, 0.0f, transform.position.z);
         moveVertical = Input.GetAxis("Vertical");

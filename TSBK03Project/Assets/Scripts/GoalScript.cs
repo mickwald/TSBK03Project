@@ -22,7 +22,9 @@ public class GoalScript : MonoBehaviour {
 	{
 		if (other.tag == "Player") {
 			if (GameObject.FindGameObjectWithTag ("Player").GetComponent<PlayerScript> ().treasureCount >= 10) {
-				//WIN
+                //WIN
+                other.gameObject.GetComponent<PlayerScript>().Win();
+                Debug.Log("Congratulations on winning the game!");
 				//this.gameObject.SetActive (false);
 				GameObject.FindGameObjectWithTag ("Player").GetComponent<PlayerScript> ().treasureCount = 0;
 				for (int i = 0; i < treasureList.Length; i++) {
