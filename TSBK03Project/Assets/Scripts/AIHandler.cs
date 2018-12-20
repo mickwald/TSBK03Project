@@ -30,7 +30,7 @@ public class AIHandler : MonoBehaviour {
             children++;
             for (int a = 0; a < waypoints.Length; a++)
             {
-                waypoints[a] = (a + 4 * ((i) % 4)) % wayPointList.transform.childCount;
+                waypoints[a] = (a + 4 * i) % wayPointList.transform.childCount;
                 Debug.Log(waypoints[a]);
             }
             newchild = Instantiate(prefab, this.transform);
