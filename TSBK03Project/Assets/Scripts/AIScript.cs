@@ -39,7 +39,7 @@ public class AIScript : MonoBehaviour
     private GameObject handler;
     private int layerMask = 1 << 8; // Bit shift the index of the layer (8) to get a bit mask
     private float influenceMapUpdateTime;
-    private NavMeshAgent agent;
+	private NavMeshAgent agent;
     private bool setPath = false;
     private bool drawTexture;
     private int textureChild;
@@ -126,7 +126,7 @@ public class AIScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        comCounter = (int)(2.0f / Time.deltaTime);
+        //comCounter = (int)(2.0f / Time.deltaTime);
         agent.speed = movementSpeed;
         if (communicating)
         {
@@ -564,4 +564,8 @@ public class AIScript : MonoBehaviour
             }
         }
     }
+	public void SetSpeed(float f){
+		//this.agent.speed = f;
+		//this.agent.acceleration = f;
+	}
 }

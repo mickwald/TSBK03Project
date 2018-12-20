@@ -1267,6 +1267,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   treasureList: []
+  AIList: {fileID: 1444576299}
 --- !u!1 &347914423
 GameObject:
   m_ObjectHideFlags: 0

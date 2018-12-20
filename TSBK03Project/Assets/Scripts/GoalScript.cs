@@ -5,6 +5,7 @@ using UnityEngine;
 public class GoalScript : MonoBehaviour {
 
 	public GameObject[] treasureList;
+	public GameObject AIList;
 
 
 	// Use this for initialization
@@ -27,6 +28,10 @@ public class GoalScript : MonoBehaviour {
 				for (int i = 0; i < treasureList.Length; i++) {
 					if (!treasureList [i].gameObject.activeSelf)
 						treasureList [i].gameObject.SetActive (true);
+				}
+				for (int i = 0; i < AIList.transform.childCount; i++) {
+					GameObject ai = AIList.transform.GetChild (i).gameObject;
+					ai.GetComponent<AIScript>().SetSpeed (0.0f);
 				}
 			}
 		}
