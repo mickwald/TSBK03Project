@@ -19,17 +19,18 @@ public class AIHandler : MonoBehaviour {
     private bool jumpPressed = false;
 
 
-	// Use this for initialization
-	void Start () {
-		comLockShort = false;
+    // Use this for initialization
+    void Start()
+    {
+        comLockShort = false;
         waypoints = new int[4];
         textureChildIndex = 2;
         for (int i = 0; i < agentsWanted; i++)
         {
             children++;
-            for (int a =0; a < waypoints.Length; a++)
+            for (int a = 0; a < waypoints.Length; a++)
             {
-                waypoints[a] = UnityEngine.Random.Range(0, wayPointList.transform.childCount);
+                waypoints[a] = a + 4*((i)%4);
             }
             newchild = Instantiate(prefab, this.transform);
             Quaternion tmp = newchild.transform.rotation;
@@ -37,16 +38,16 @@ public class AIHandler : MonoBehaviour {
             newchild.transform.rotation = tmp;
             newchild.transform.position = new Vector3(UnityEngine.Random.Range(0, 256) - 128, 1, UnityEngine.Random.Range(0, 256) - 128);
             //Debug.Log(newchild.transform.position);
-            for(int j = 0; j < this.waypoints.Length; j++)
+            for (int j = 0; j < this.waypoints.Length; j++)
             {
                 //Debug.Log("j = " + j + ", waypoint children = " + wayPointList.transform.childCount);
-                newchild.GetComponent<AIScript>().wayPoints[j] = 
+                newchild.GetComponent<AIScript>().wayPoints[j] =
                     wayPointList.transform.GetChild(waypoints[j]).gameObject;
             }
         }
 
 
-	}
+    }
 
 	public bool AcquireComLockShort(GameObject holder){
 		//Debug.Log ("trying to get lock");
