@@ -33,7 +33,7 @@ public class PlayerScript : MonoBehaviour {
         this.transform.Rotate(360* moveHorizontal * Vector3.up * Time.deltaTime);
 		this.transform.Translate(moveStrafe * playerSpeed * Time.deltaTime, 0, 0, Space.Self);
         rb.velocity = Vector3.zero;
-		treasureText.text = "Treasure: " + treasureCount;
+		treasureText.text = "Treasure: " + treasureCount + " /10";
 
 
 	}
